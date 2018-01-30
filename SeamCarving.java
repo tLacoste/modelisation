@@ -273,6 +273,7 @@ public class SeamCarving
 		
 		// ATTENTION ! RESTE A FAIRE LA BOUCLE "TANT QUE" SUR LA PARTIE 3 ET 4 
 		return cheminPlusCour;
+		
 	}
 	
 	
