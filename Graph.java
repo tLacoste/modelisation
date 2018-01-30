@@ -72,4 +72,9 @@ public class Graph
 		  }						
 	 }
    
+   public ArrayList<Edge>[] getAdj()
+   {
+	   return adj;
+   }
+   
 }

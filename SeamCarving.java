@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.io.*;
 import java.util.*;
+
 public class SeamCarving
 {
 
@@ -173,8 +174,106 @@ public class SeamCarving
 		return g;
 	}
 	
-	public int[] Dijsktra(Graph g, int s, int t) {
-		return null;
+	/**
+	 * Renvoit le chemin le plus cour d'un graphe g entre les sommets s et t
+	 * @param g
+	 * 			Graphe
+	 * @param s	
+	 * 			Sommet de depart
+	 * @param t
+	 * 			Sommet d'arrive
+	 * @return
+	 * 		   Chemin le plus court sous la forme d'un tableau (suite de sommet)
+	 */
+	public int[] Dijsktra(Graph g, int s, int t) 
+	{
+		//							Partie 1
+		//-------------------------------------------------------------------
+		// Parcour de tous les sommets possible depuis celui de depart
+		Test.dfs(g, s); 
+		// Verification qu'un chemin existe entre les deux sommets
+		if(s > t || Test.visite[t] != true)
+		{
+			System.out.println("Erreur : Il n'existe aucun chemin entre les deux sommets"); 
+		}
+		// Tableau retourne  a la fin de la methode
+		int[] cheminPlusCour = null;
 		
+		
+		//						    Partie 2
+		//---------------------------------------------------------------------
+		// Tableau a 3 colonnes : Numero du noeud (Colonne 0), Poids du noeud = Interet du pixel (Colonne 1), Boolean "Deja Parcouru ?" (Colonne 2)
+		String[][] tableauPoids = null; 
+		// Tableau a 2 colonnes : Numero du noeud (Colonne 0), Numero de l'antecedent (Colonne 1)
+		String[][] tableauAntecedents = null;
+		int i; // Represente la colonnes actuel du tableau : 0, 1 ou 2
+		int j; // Représente le noeud du graphe pour chaque colonne du tableau
+		int arg = 0;  // Variable permettant de passer facilement d'un entier a un string
+		// Parcour des 3 colonnes (seulement 2 pour le tableau des antecedents)
+		for(i = 0; i < 3; ++i)
+		{
+			// Initialisation du tableau des poids et du tableau des antecedents
+			for(j = 0; j < g.getAdj().length-1; ++j) // j doit correspondre au numero du noeud dans le tableau adj de la classe Graph
+			{
+				// Creation de la colonne 0 pour les deux tableaux
+				if(i == 0)
+				{
+					arg = j + 1;
+					// Tableau des poids colonne 0
+					tableauPoids[i][j] = Integer.toString(arg);
+					// Tableau des antecedents colonne 0
+					tableauAntecedents[i][j] = Integer.toString(arg);
+				}
+				// Creation de la colonne 1 pour les deux tableaux
+				if (i == 1)
+				{
+					// Tableau des poids colonne 1
+					if(j != s)
+					{
+						arg = -1; // Cas ou la case de la colonne 1 n'est pas la case de depart => Poid negatif
+					}
+					else
+					{
+						arg = 0; // Cas ou la case de la colonne 1 correspond au noeud de depart => Poids de 0
+					}
+					tableauPoids[i][j] = Integer.toString(arg);
+					// Tableau des antecedents colonne 1
+					tableauAntecedents[i][j] = "Aucun";
+				}
+				// Creation de la colonne 2 pour le tableau des poids
+				if(i == 2)
+				{
+					tableauPoids[i][j] = "Non";
+				}
+			}
+		}
+		
+		//								Partie 3
+		//------------------------------------------------------------------
+		// On recherche le noeud non parcouru ayant le poid le plus faible, puis on le parcour
+		i = 1; // On va parcourir la colonne 1 du tableau des poids
+		int poidPlusFaible = 0; // Variable de stockage du poid le plus faible
+		int indiceNoeud = -1; // Variable de stockage de l'indice du noeud de poid le plus faible = Numero du noeud dans la colonne 0
+		for (j = 0; j < g.getAdj().length-1; ++j)
+		{
+			if (Integer.parseInt(tableauPoids[i][j]) <= poidPlusFaible  // Trouver le poid le plus faible, poid de 0 = noeud de depart
+				&& Integer.parseInt(tableauPoids[i][j]) != -1 // Poid different de -1 => pour eviter qu'un poids negatif soit considerer comme le poids le plus faible  
+				&& tableauPoids[2][j] == "Non") // Uniquement les noeuds non parcouru
+			{
+				poidPlusFaible = Integer.parseInt(tableauPoids[i][j]);
+				indiceNoeud = j + 1 ; // j + 1 car j commence a 0 et on veut que j corresponde au numero du noeud 
+			}
+		}
+		tableauPoids[2][indiceNoeud] = "Oui"; // On parcour le noeud non parcouru de poids le plus faible
+		
+		
+		//								Partie 4
+		//------------------------------------------------------------------------
+		// Recherche et changement du poid des fils du noeud actuel
+		
+		// ATTENTION ! RESTE A FAIRE LA BOUCLE "TANT QUE" SUR LA PARTIE 3 ET 4 
+		return cheminPlusCour;
 	}
+	
+	
 }
