@@ -189,6 +189,8 @@ public class SeamCarving
 	{
 		//							Partie 1
 		//-------------------------------------------------------------------
+		// Tableau inverse a celui a retourner a la fin de la methode
+		int[] cheminPlusCour = null;
 		// Parcour de tous les sommets possible depuis celui de depart
 		Test.dfs(g, s); 
 		// Verification qu'un chemin existe entre les deux sommets
@@ -196,9 +198,12 @@ public class SeamCarving
 		{
 			System.out.println("Erreur : Il n'existe aucun chemin entre les deux sommets"); 
 		}
-		// Tableau retourne  a la fin de la methode
-		int[] cheminPlusCour = null;
-		
+		// Si le noeud de depart et d'arrive sont identique
+		if(s == t)
+		{
+			cheminPlusCour[0] = s;
+			return cheminPlusCour;
+		}
 		
 		//						    Partie 2
 		//---------------------------------------------------------------------
@@ -251,28 +256,110 @@ public class SeamCarving
 		//								Partie 3
 		//------------------------------------------------------------------
 		// On recherche le noeud non parcouru ayant le poid le plus faible, puis on le parcour
+		int indiceNoeudActuel = s; // Initialisation de l'indice du noeud actuel au noeud de depart
+		ArrayList<Edge> listeEdgeNoeudActuel = null; // Initialisation. Correspond a la liste des Edges liee au noeudActuel
+		int[] filsNoeudActuel = null; // Liste des fils du noeud actuel, utile pour la partie 4		
+		int[] costEdgePereFils = null; // List des couts des noeuds entre le noeud actuel et son fils. Va en paralelle avec le tableau precedent.
+		int pos = 0; // Position dans le tableau fulsNoeudActuel
 		i = 1; // On va parcourir la colonne 1 du tableau des poids
 		int poidPlusFaible = 0; // Variable de stockage du poid le plus faible
 		int indiceNoeud = -1; // Variable de stockage de l'indice du noeud de poid le plus faible = Numero du noeud dans la colonne 0
-		for (j = 0; j < g.getAdj().length-1; ++j)
+		boolean finit = false; // Termine la boucle while quand le noeud de poids le plus faible est le noeud d'arrive
+		
+		while(finit == false)
 		{
-			if (Integer.parseInt(tableauPoids[i][j]) <= poidPlusFaible  // Trouver le poid le plus faible, poid de 0 = noeud de depart
-				&& Integer.parseInt(tableauPoids[i][j]) != -1 // Poid different de -1 => pour eviter qu'un poids negatif soit considerer comme le poids le plus faible  
-				&& tableauPoids[2][j] == "Non") // Uniquement les noeuds non parcouru
+			////////BOUCLE TANT QUE/////////
+			for (j = 0; j < g.getAdj().length-1; ++j)
 			{
-				poidPlusFaible = Integer.parseInt(tableauPoids[i][j]);
-				indiceNoeud = j + 1 ; // j + 1 car j commence a 0 et on veut que j corresponde au numero du noeud 
+				if (Integer.parseInt(tableauPoids[i][j]) <= poidPlusFaible  // Trouver le poid le plus faible, poid de 0 = noeud de depart
+					&& Integer.parseInt(tableauPoids[i][j]) != -1 // Poid different de -1 => pour eviter qu'un poids negatif soit considerer comme le poids le plus faible  
+					&& tableauPoids[2][j] == "Non") // Uniquement les noeuds non parcouru
+				{
+					poidPlusFaible = Integer.parseInt(tableauPoids[i][j]);
+					indiceNoeud = j + 1 ; // j + 1 car j commence a 0 et on veut que j corresponde au numero du noeud 
+				}
+			}
+			tableauPoids[2][indiceNoeud] = "Oui"; // On parcour le noeud non parcouru de poids le plus faible
+			// On s'arrete si le noeud d'arrive est parcouru
+			if(indiceNoeud == t)
+			{
+				finit = true;
+				break;
+			}
+			//								Partie 4
+			//------------------------------------------------------------------------
+			// Recherche et changement du poid des fils du noeud actuel
+			indiceNoeudActuel = indiceNoeud; // Mise a jour de l'indice du noeud actuel
+			listeEdgeNoeudActuel = g.adjBis(indiceNoeudActuel); // noeudActuel prend la valeur de la liste des Edges lie a ce noeud
+			// On doit trouver tous les fils du noeudActuel, on regarde chaque edge lies au noeud actuel
+			for(Edge e : listeEdgeNoeudActuel)
+			{
+				// Si le noeud actuel a un edge d'on le point de depart ("From") est lui-meme = si le noeud actuel a un fils
+				if(e.getFrom() == indiceNoeudActuel)  
+				{
+					filsNoeudActuel[pos] = e.getTo(); // On stock l'indice du fils du noeudActuel
+					costEdgePereFils[pos] = e.getCost(); // On stock le poid du Edge entre le pere et le fils
+					pos += 1; // Incremente la position pour le prochaine ajout
+				}
+			}
+			
+			// Pour chaque fils du noeud actuel
+			for(int k = 0; k < filsNoeudActuel.length; ++k)
+			{
+				int poidsNoeudPere = Integer.parseInt(tableauPoids[1][indiceNoeudActuel]); // On stock le poids du noeud pere/actuel pour y acceder plus facilement
+				int poidsLiaisonPereFils = costEdgePereFils[k]; // On stock le poid du Edge entre le pere et le fils
+				// Condition :
+				// Si le noeud fils na pas encore etait parcouru
+				// ET Si 
+				//  	.Soit la distance pour aller du depart au noeud fils en passant par le noeud pere 
+				// 		 est plus petite que la distance pour aller du depart au noeud fils en passant par 
+				//		 un autre chemin
+				//      . Soit le poid du noeud fils est = a -1
+				if(tableauPoids[2][filsNoeudActuel[k]] != "Oui")
+				{
+					if(((poidsNoeudPere + poidsLiaisonPereFils) < Integer.parseInt(tableauPoids[1][filsNoeudActuel[k]])) 
+					     || (tableauPoids[1][filsNoeudActuel[k]] == Integer.toString(-1)) )
+					{
+						// Le poids du fils prend la valeur du chemin du debut au fils en passant par le pere
+						tableauPoids[1][filsNoeudActuel[k]] = Integer.toString(poidsNoeudPere + poidsLiaisonPereFils);
+						// On indique que l'antecedent du noeud fils est le noeud pere
+						tableauAntecedents[1][filsNoeudActuel[k]] = Integer.toString(indiceNoeudActuel);
+					}			
+				}
 			}
 		}
-		tableauPoids[2][indiceNoeud] = "Oui"; // On parcour le noeud non parcouru de poids le plus faible
-		
-		
-		//								Partie 4
+				
+		//								Partie 5
 		//------------------------------------------------------------------------
-		// Recherche et changement du poid des fils du noeud actuel
+		// Construction du tableau du chemin  le plus cour via le tableau des antecedents
+		boolean stop = false;
+		String antecedentActuel = tableauAntecedents[1][t]; // Indice antecedent actuel a ranger dans le tableau
+		int compteurAntecedent = 0; // Permet de designer l'indice du tableau a return et de compter les antecedents (-1)
+		cheminPlusCour[compteurAntecedent] = Integer.parseInt(antecedentActuel);
+		// Temps que le tableau n'est pas remplis
+		while(stop == false)
+		{
+			// Si l'antecedent actuel est le noeud de depart
+			if(Integer.parseInt(antecedentActuel) == s)
+			{
+				stop = true;
+				break;
+			}
+			antecedentActuel = tableauAntecedents[1][Integer.parseInt(antecedentActuel)];
+			compteurAntecedent += 1;
+			cheminPlusCour[compteurAntecedent] = Integer.parseInt(antecedentActuel);
+		}
 		
-		// ATTENTION ! RESTE A FAIRE LA BOUCLE "TANT QUE" SUR LA PARTIE 3 ET 4 
-		return cheminPlusCour;
+		// On doit envoyer le tableau inverse a celui construit car on la construit 
+		// en partant du noeud d'arrive via les antecedents
+		int[] cheminPlusCourFinal = null; // Tableau d'entier a rendre
+		int compteurInverse = 0; // Permet de parcourir le tableau a rendre
+		for(int m = cheminPlusCour.length - 1; m >= 0; --m) // Parcour inverse du tableau construit
+		{
+			cheminPlusCourFinal[compteurInverse] = cheminPlusCour[m];
+			++compteurInverse;
+		}
+		return cheminPlusCourFinal;
 	}
 	
 	

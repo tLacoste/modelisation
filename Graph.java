@@ -33,7 +33,13 @@ public class Graph
    public Iterable<Edge> adj(int v)
 	 {
 		return adj[v];
+	 }     
+   
+   public ArrayList<Edge> adjBis(int v)
+	 {
+		return adj[v];
 	 }      
+
 
    public Iterable<Edge> next(int v)
 	 {
