@@ -55,9 +55,37 @@ class Test
 		dfs(g, 3);
 	 }
    
+   public static void testDijsktra()
+   {
+	   int n = 5;
+		int i,j;
+		Graph g = new Graph(n*n+2);
+		
+		for (i = 0; i < n-1; i++)
+		  for (j = 0; j < n ; j++)
+			g.addEdge(new Edge(n*i+j, n*(i+1)+j, 1664 - (i+j)));
+
+		for (j = 0; j < n ; j++)		  
+		  g.addEdge(new Edge(n*(n-1)+j, n*n, 666));
+		
+		for (j = 0; j < n ; j++)					
+		  g.addEdge(new Edge(n*n+1, j, 0));
+		
+		g.addEdge(new Edge(13,17,1337));
+		g.writeFile("test.dot");
+		// dfs à partir du sommet 3
+		visite = new boolean[n*n+2];
+		dfs(g, 3);
+		int[] chemin = SeamCarving.Dijsktra(g, 0, 25);
+		for(int z =0; z < chemin.length; z ++) {
+			System.out.println(chemin[z]);
+		}
+   }
+   
    public static void main(String[] args)
 	 {
 		testHeap();
 		testGraph();
+		testDijsktra();
 	 }
 }

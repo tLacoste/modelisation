@@ -5,7 +5,7 @@ public class SeamCarving
 {
 
 	/**
-	 * Méthode readpgm
+	 * Mï¿½thode readpgm
 	 * Permet de lire un fichier .pgm
 	 * @param fn le nom du fichier
 	 * @return renvoie un tableau de pixels
@@ -43,13 +43,13 @@ public class SeamCarving
 	}
 
 	/**
-	 * Méthode writepgm
-	 * Permet d'écrire un fichier .pgm
+	 * Mï¿½thode writepgm
+	 * Permet d'ï¿½crire un fichier .pgm
 	 * @param image tableau des pixels de l'image
-	 * @param filename nom du fichier créé
+	 * @param filename nom du fichier crï¿½ï¿½
 	 */
-	public void writepgm(int[][] image, String filename) {
-		// Déclaration des variables
+	public static void writepgm(int[][] image, String filename) {
+		// Dï¿½claration des variables
 		FileWriter fw = null;
 		BufferedWriter bw = null;
 		int imageHeight = image.length;
@@ -61,7 +61,7 @@ public class SeamCarving
 			bw = new BufferedWriter(fw);
 			// Ecriture du type de fichier
 			bw.write("P2\n");
-			// Ecriture du moyen de création du fichier (facultatif)
+			// Ecriture du moyen de crï¿½ation du fichier (facultatif)
 			bw.write("#File written by SeamCarving.java\n");
 			// Ecriture de la largeur et hauteur du fichier
 			bw.write(imageWidth+" "+imageHeight+"\n");
@@ -73,7 +73,7 @@ public class SeamCarving
 					// Ecriture de la valeur du pixel
 					fw.write(image[y][x]+" ");
 				}
-				// Retour à la ligne
+				// Retour ï¿½ la ligne
 				fw.write("\n");
 			}
 		} catch (IOException e) {
@@ -91,17 +91,17 @@ public class SeamCarving
 	}  
 
 	/**
-	 * Méthode interest
-	 * Permet d'avoir le facteur d'intérêt de chacun des pixels du tableau
+	 * Methode interest
+	 * Permet d'avoir le facteur d'interet de chacun des pixels du tableau
 	 * @param image tableau des pixels de l'image
-	 * @return un tableau de valeur de facteur d'intérêt de chaque pixel
+	 * @return un tableau de valeur de facteur d'intï¿½rï¿½t de chaque pixel
 	 */
-	public int[][] interest(int[][] image){
+	public static int[][] interest(int[][] image){
 		// Hauteur de l'image
 		int imageHeight = image.length;
 		// Largeur de l'image
 		int imageWidth = image[0].length;
-		// Tableau contenant le facteur d'intérêt de chaque pixel
+		// Tableau contenant le facteur d'intï¿½rï¿½t de chaque pixel
 		int[][] tabFacteurInteret = new int[imageHeight][imageWidth];
 		// Parcours du tableau de l'image
 		for(int y=0; y<imageHeight; y++) {
@@ -118,14 +118,14 @@ public class SeamCarving
 					// Si un pixel a un voisin de gauche et un voisin de droite
 					moyVoisinInteret = (image[y][x-1]+image[y][x+1])/2;
 				}
-				// Calcul du facteur d'intérêt du pixel et ajout au tableau.
+				// Calcul du facteur d'intï¿½rï¿½t du pixel et ajout au tableau.
 				tabFacteurInteret[y][x] = Math.abs(image[y][x] - moyVoisinInteret);
 			}
 		}
 		return tabFacteurInteret;
 	}
 
-	public Graph tograph(int[][] itr) {
+	public static Graph tograph(int[][] itr) {
 		int itrWidth = itr[0].length;
 		int itrHeight = itr.length;
 		// Nombre de sommets
@@ -133,20 +133,20 @@ public class SeamCarving
 		// Instanciation du Graph
 		Graph g = new Graph(nbSommets);
 
-		// Création des arêtes du premier sommet
+		// Crï¿½ation des arï¿½tes du premier sommet
 		for(int x=0; x<itrWidth; x++) {
 			g.addEdge(new Edge(0, x+1, 0));
 		}
-		// Création des arêtes des sommets représentant les pixels
+		// Crï¿½ation des arï¿½tes des sommets reprï¿½sentant les pixels
 		for(int y=0; y<itrHeight; y++) {
 			for(int x=0; x<itrWidth; x++) {
-				// Facteur d'intérêt du pixel actuel
+				// Facteur d'intï¿½rï¿½t du pixel actuel
 				int facteurInteret = itr[y][x];
 
 				int from = (y*itrWidth)+x+1;
 				int to = ((y+1)*itrWidth)+x+1;
 
-				// Si on n'est pas sur la dernière ligne
+				// Si on n'est pas sur la derniï¿½re ligne
 				if(y != itrHeight-1) {
 					// Si le pixel a un voisin de gauche
 					if(x!= 0) {
@@ -156,25 +156,117 @@ public class SeamCarving
 						g.addEdge(new Edge(from, to-1, facteurInteret));
 					}
 				}else {
-					// Sinon si on est bien à la dernière ligne
+					// Sinon si on est bien Ã  la derniÃ¨re ligne
 					// on change la destination
 					// pour quelle corresponde au dernier sommet
 					to= itrWidth*itrHeight+1;
 				}
 
-				// Dans tous les cas on relie le pixel à celui d'en dessous
+				// Dans tous les cas on relie le pixel Ã  celui d'en dessous
 				g.addEdge(new Edge(from, to, facteurInteret));
 			}
 		}
-		// Création des arêtes au dernier sommet
+		// CrÃ©ation des arÃªtes au dernier sommet
 		for(int x=0; x<itrWidth; x++) {
 			g.addEdge(new Edge(0, x+1, 0));
 		}
 		return g;
 	}
-	
-	public int[] Dijsktra(Graph g, int s, int t) {
-		return null;
+	public SeamCarving(String file) {
+		// DÃ©claration de la valeur signifiant la suppression du pixel
+		int REMOVE_CELL = -1;
+		// RÃ©cupÃ©ration des pixels de l'image
+		int[][] image = readpgm(file);
+		// Calcul de l'intÃ©rÃªt des pixels
+		int[][] itr = interest(image);
+		int itrWidth = itr[0].length;
+		int itrHeight = itr.length;
+		// CrÃ©ation du graphe
+		Graph g = tograph(itr);
 		
+		/* RÃ©cupÃ©ration de la colonne Ã  supprimer */
+		int premierSommet = 0;
+		int dernierSommet = itrWidth*itrHeight+1;
+		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
+		
+		/* Suppression des pixels de moindre interet */
+		for(Integer sommet: cheminInteretMoindre) {
+			// Si ce n'est pas les sommets fictifs
+			if(sommet > 0 && sommet < cheminInteretMoindre.size()-1) {
+				sommet--;
+				// Calcul du x et y du pixel
+				int x = (sommet-1)%itrWidth;
+				int y = (sommet-1)/itrHeight;
+				image[y][x]=REMOVE_CELL;
+			}
+		}
+		// DÃ©claration de notre nouvelle image
+		int[][] imageReduced = new int[itrHeight-1][itrWidth-1];
+		
+		/* CrÃ©ation de la nouvelle image */
+		for(int y=0; y< itrHeight; y++ ) {
+			for(int x=0; x< itrWidth; x++ ) {
+				// Valeur du pixel de l'ancienne image
+				int val = image[y][x];
+				if(val!=REMOVE_CELL) {
+					imageReduced[y][x] = val;
+				}
+			}
+		}
+		
+		/* Calcul du nouveau nom de fichier */
+		String fileWithoutExtension = file.substring(0, file.lastIndexOf('.'));
+		String newFile = fileWithoutExtension+"_reduced.pgm";
+		
+		// Ecriture de la nouvelle image dans un nouveau fichier
+		writepgm(imageReduced, newFile);
+	}
+	
+	public static ArrayList<Integer> Dijsktra(Graph g, int s, int t) {
+		int nbVertices = g.vertices();
+		
+		// Au dÃ©part on insÃ¨re tous les noeuds dans le tas avec prioritÃ© +infini
+		Heap h = new Heap(nbVertices);
+		// Sauf le noeud de dÃ©part qui a une prioritÃ© de 0
+		h.decreaseKey(s, 0);
+		
+		// On dÃ©clare notre chemin
+		ArrayList<Integer> chemin = new ArrayList<Integer>();
+		// On dÃ©clare notre tableau des sommets visitÃ©s
+		boolean[] visited = new boolean[nbVertices];
+		
+		int sommetPrioriteMin=-1;
+		while(sommetPrioriteMin != t) {
+			// On retire le noeud de prioritÃ© minimum.
+			sommetPrioriteMin = h.pop();
+			
+			// On dÃ©clare que le sommet a Ã©tÃ© visitÃ©
+			visited[sommetPrioriteMin] = true;
+			
+			/* On met Ã  jour ses voisins */
+			// Pour chaque successeur
+			for(Edge e: g.next(sommetPrioriteMin)) {
+				// Si le voisin n'a pas dÃ©jÃ  Ã©tÃ© visitÃ©
+				if(!visited[e.to]) {
+					// On rÃ©cupÃ¨re la prioritÃ© actuelle du sommet retirÃ©
+					int prioriteSommet = h.priority(e.from);
+					// On rÃ©cupÃ¨re la prioritÃ© actuelle du voisin
+					int prioriteVoisin = h.priority(e.to);
+					
+					// Calcul de la potentielle nouvelle prioritÃ©
+					int nouvellePriorite = prioriteSommet+e.cost;
+					
+					// Si la nouvelle prioritÃ© est plus faible que l'ancienne
+					if(nouvellePriorite < prioriteVoisin) {
+						// On met Ã  jour la prioritÃ© de ce voisin
+						h.decreaseKey(e.to, nouvellePriorite);
+					}
+				}
+			}
+			// On ajoute le sommet de cout minimum au chemin
+			chemin.add(sommetPrioriteMin);
+		}
+
+		return chemin;
 	}
 }
