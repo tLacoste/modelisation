@@ -172,44 +172,44 @@ public class SeamCarving
 		}
 		return g;
 	}
-	public SeamCarving(String file) {
+
+	public int[][] reduceImage(int[][] image){
 		// Déclaration de la valeur signifiant la suppression du pixel
 		int REMOVE_CELL = -1;
-		// Récupération des pixels de l'image
-		int[][] image = readpgm(file);
 		// Calcul de l'intérêt des pixels
 		int[][] itr = interest(image);
 		int itrWidth = itr[0].length;
 		int itrHeight = itr.length;
+		// Déclaration de notre nouvelle image
+		int[][] imageReduced = new int[itrHeight][itrWidth-1];
 		// Création du graphe
 		Graph g = tograph(itr);
-		
+
 		/* Récupération de la colonne à supprimer */
 		int premierSommet = 0;
 		int dernierSommet = itrWidth*itrHeight+1;
 		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
-		
+
 		// Suppression du premier sommet qui était fictif
 		cheminInteretMoindre.remove(0);
 		// Suppression du dernier sommet qui était fictif
 		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
-		
+
 		/* Suppression des pixels de moindre interet */
 		for(Integer sommet: cheminInteretMoindre) {
 			// Si ce n'est pas les sommets fictifs
-				// Calcul du x et y du pixel
-				int x = (sommet%itrWidth)-1;
-				int y = (sommet/itrHeight)-1;
-				image[y][x]=REMOVE_CELL;
+			// Calcul du x et y du pixel
+			int x = (sommet%itrWidth)-1;
+			int y = (sommet/itrHeight)-1;
+			image[y][x]=REMOVE_CELL;
 		}
-		// Déclaration de notre nouvelle image
-		int[][] imageReduced = new int[itrHeight][itrWidth-1];
+
 		/* Création de la nouvelle image */
 		for(int y=0; y< itrHeight; y++ ) {
 			for(int x=0, xImageReduced=0; x< itrWidth; x++,xImageReduced++ ) {
 				// Valeur du pixel de l'ancienne image
 				int val = image[y][x];
-				
+
 				// Si le pixel doit être retiré
 				if(val==REMOVE_CELL) {
 					// On n'affecte pas la valeur dans imageReduced
@@ -221,27 +221,37 @@ public class SeamCarving
 				}
 			}
 		}
-		
+		return imageReduced;
+	}
+
+	public SeamCarving(String file) {
+		// Récupération des pixels de l'image
+		int[][] image = readpgm(file);
+		// Boucle de suppression des 50 colonnes
+		for(int i =0; i<50; i++) {
+			image = reduceImage(image);
+		}
+
 		/* Calcul du nouveau nom de fichier */
 		String fileWithoutExtension = file.substring(0, file.lastIndexOf('.'));
 		String newFile = fileWithoutExtension+"_reduced.pgm";
 		
 		// Ecriture de la nouvelle image dans un nouveau fichier
-		writepgm(imageReduced, newFile);
+		writepgm(image, newFile);
 		System.out.println("Terminé");
 	}
-	
+
 	public static ArrayList<Integer> Dijsktra(Graph g, int s, int t) {
 		int nbVertices = g.vertices();
-		
+
 		// Au départ on insère tous les noeuds dans le tas avec priorité +infini
 		Heap h = new Heap(nbVertices);
 		// Sauf le noeud de départ qui a une priorité de 0
 		h.decreaseKey(s, 0);
-		
+
 		// On déclare notre chemin
 		ArrayList<Integer> chemin = new ArrayList<Integer>();
-		
+
 		// On déclare notre tableau des sommets visités
 		boolean[] visited = new boolean[nbVertices];
 		// On déclare notre tableau contenant les parents de chaque sommet
@@ -253,15 +263,15 @@ public class SeamCarving
 			visited[i] = false;
 			parent[i] = -1;
 		}
-		
+
 		int sommetPrioriteMin=-1;
 		while(sommetPrioriteMin != t) {
 			// On retire le noeud de priorité minimum.
 			sommetPrioriteMin = h.pop();
-			
+
 			// On déclare que le sommet a été visité
 			visited[sommetPrioriteMin] = true;
-			
+
 			/* On met à jour ses voisins */
 			// Pour chaque successeur
 			for(Edge e: g.next(sommetPrioriteMin)) {
@@ -271,10 +281,10 @@ public class SeamCarving
 					int prioriteSommet = h.priority(e.from);
 					// On récupère la priorité actuelle du voisin
 					int prioriteVoisin = h.priority(e.to);
-					
+
 					// Calcul de la potentielle nouvelle priorité
 					int nouvellePriorite = prioriteSommet+e.cost;
-					
+
 					// Si la nouvelle priorité est plus faible que l'ancienne
 					if(nouvellePriorite < prioriteVoisin) {
 						// On met à jour la priorité de ce voisin
@@ -285,7 +295,7 @@ public class SeamCarving
 				}
 			}
 		}
-		
+
 		int p=t;
 		while(p!=parent[s]) {
 			System.out.println(p);
