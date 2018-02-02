@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 class Test
 {
    static boolean visite[];
@@ -54,6 +56,34 @@ class Test
 		visite = new boolean[n*n+2];
 		dfs(g, 3);
 	 }
+   
+   /**
+    * Test de la méthode Dijsktra
+    */
+   public static void testDijkstra()
+   {
+	   int n = 5;
+	   int i,j;
+	   Graph g = new Graph(n*n+2);
+	   for (i = 0; i < n-1; i++)
+			  for (j = 0; j < n ; j++)
+				g.addEdge(new Edge(n*i+j, n*(i+1)+j, 1664 - (i+j)));
+
+			for (j = 0; j < n ; j++)		  
+			  g.addEdge(new Edge(n*(n-1)+j, n*n, 666));
+			
+			for (j = 0; j < n ; j++)					
+			  g.addEdge(new Edge(n*n+1, j, 0));
+			
+			g.addEdge(new Edge(13,17,1337));
+			
+		
+		ArrayList<Integer> test = new ArrayList<Integer>();
+		System.out.println("Test Dijkstra !\n");
+		test = SeamCarving.Dijsktra(g, 1, 8);
+		System.out.println(test);
+		
+   }
    
    public static void main(String[] args)
 	 {
