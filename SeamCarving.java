@@ -125,7 +125,8 @@ public class SeamCarving
 		return tabFacteurInteret;
 	}
 
-	public static Graph tograph(int[][] itr) {
+	public static Graph tograph(int[][] image) {
+		int[][] itr = interest(image);
 		int itrWidth = itr[0].length;
 		int itrHeight = itr.length;
 		// Nombre de sommets
@@ -230,60 +231,7 @@ public class SeamCarving
 		return g;
 	}
 
-	public int[][] reduceImage(int[][] image){
-		// Déclaration de la valeur signifiant la suppression du pixel
-		int REMOVE_CELL = -1;
-		// Calcul de l'intérêt des pixels
-		int[][] itr = interest(image);
-		int itrWidth = itr[0].length;
-		int itrHeight = itr.length;
-		// Déclaration de notre nouvelle image
-		int[][] imageReduced = new int[itrHeight][itrWidth-1];
-		// Création du graphe
-		Graph g = tograph(itr);
-
-		/* Récupération de la colonne à supprimer */
-		int premierSommet = 0;
-		int dernierSommet = itrWidth*itrHeight+1;
-		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
-
-		// Suppression du premier sommet qui était fictif
-		cheminInteretMoindre.remove(0);
-		// Suppression du dernier sommet qui était fictif
-		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
-
-		/* Suppression des pixels de moindre interet */
-		for(Integer sommet: cheminInteretMoindre) {
-			// Diminution des sommets car le premier sommet fictif
-			// Prenait la cellule 0
-			sommet --;
-			// Calcul du x et y du pixel
-			int x = (sommet%itrWidth);
-			int y = (sommet/itrWidth);
-			image[y][x]=REMOVE_CELL;
-		}
-
-		/* Création de la nouvelle image */
-		for(int y=0; y< itrHeight; y++ ) {
-			for(int x=0, xImageReduced=0; x< itrWidth; x++,xImageReduced++ ) {
-				// Valeur du pixel de l'ancienne image
-				int val = image[y][x];
-
-				// Si le pixel doit être retiré
-				if(val==REMOVE_CELL) {
-					// On n'affecte pas la valeur dans imageReduced
-					// et on repositionne notre curseur
-					xImageReduced--;
-				}else {
-					// On affecte la valeur du pixel dans notre nouvelle image
-					imageReduced[y][xImageReduced] = val;
-				}
-			}
-		}
-		return imageReduced;
-	}
-
-	public int[][] reduceImageWithIntensity(int[][] image){
+	public int[][] reduceImage(int[][] image, boolean useIntensity){
 		// Déclaration de la valeur signifiant la suppression du pixel
 		int REMOVE_CELL = -1;
 		// Calcul de l'intérêt des pixels
@@ -292,7 +240,12 @@ public class SeamCarving
 		// Déclaration de notre nouvelle image
 		int[][] imageReduced = new int[imageHeight][imageWidth-1];
 		// Création du graphe
-		Graph g = tographWithIntensity(image);
+		Graph g;
+		if(useIntensity) {
+			g= tographWithIntensity(image);
+		}else {
+			g = tograph(image);
+		}
 
 		/* Récupération de la colonne à supprimer */
 		int premierSommet = 0;
@@ -338,9 +291,23 @@ public class SeamCarving
 	public SeamCarving(String fileSrc, String fileDest) {
 		// Récupération des pixels de l'image
 		int[][] image = readpgm(fileSrc);
+		int nbColumnToRemove = 50;
+		int nbLineToRemove = 50;
+		
+		/* Vérification de la taille du fichier */
+		// S'il n'y a pas assez de pixels en largeur
+		if(image[0].length<=nbColumnToRemove) {
+			System.out.println("Largeur de l'image insuffisante");
+			System.exit(1);
+		}
+		// S'il n'y a pas assez de pixels en hauteur
+		if(image.length<=nbLineToRemove) {
+			System.out.println("Hauteur de l'image insuffisante");
+			System.exit(1);
+		}
 		// Boucle de suppression des 50 colonnes
-		for(int i =0; i<50; i++) {
-			image = reduceImage(image);
+		for(int i =0; i<nbColumnToRemove; i++) {
+			image = reduceImage(image, false);
 		}
 		
 		// Ecriture de la nouvelle image dans un nouveau fichier
