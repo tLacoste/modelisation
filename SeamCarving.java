@@ -49,7 +49,7 @@ public class SeamCarving
 	 * @param filename nom du fichier cr��
 	 */
 	public static void writepgm(int[][] image, String filename) {
-		// D�claration des variables
+		// Déclaration des variables
 		FileWriter fw = null;
 		BufferedWriter bw = null;
 		int imageHeight = image.length;
@@ -61,7 +61,7 @@ public class SeamCarving
 			bw = new BufferedWriter(fw);
 			// Ecriture du type de fichier
 			bw.write("P2\n");
-			// Ecriture du moyen de cr�ation du fichier (facultatif)
+			// Ecriture du moyen de création du fichier (facultatif)
 			bw.write("#File written by SeamCarving.java\n");
 			// Ecriture de la largeur et hauteur du fichier
 			bw.write(imageWidth+" "+imageHeight+"\n");
@@ -73,7 +73,7 @@ public class SeamCarving
 					// Ecriture de la valeur du pixel
 					fw.write(image[y][x]+" ");
 				}
-				// Retour � la ligne
+				// Retour à la ligne
 				fw.write("\n");
 			}
 		} catch (IOException e) {
@@ -101,7 +101,7 @@ public class SeamCarving
 		int imageHeight = image.length;
 		// Largeur de l'image
 		int imageWidth = image[0].length;
-		// Tableau contenant le facteur d'int�r�t de chaque pixel
+		// Tableau contenant le facteur d'intérêt de chaque pixel
 		int[][] tabFacteurInteret = new int[imageHeight][imageWidth];
 		// Parcours du tableau de l'image
 		for(int y=0; y<imageHeight; y++) {
@@ -133,11 +133,11 @@ public class SeamCarving
 		// Instanciation du Graph
 		Graph g = new Graph(nbSommets);
 
-		// Cr�ation des ar�tes du premier sommet
+		// Création des arêtes du premier sommet
 		for(int x=0; x<itrWidth; x++) {
 			g.addEdge(new Edge(0, x+1, 0));
 		}
-		// Cr�ation des ar�tes des sommets repr�sentant les pixels
+		// Création des arêtes des sommets représentant les pixels
 		for(int y=0; y<itrHeight; y++) {
 			for(int x=0; x<itrWidth; x++) {
 				// Facteur d'int�r�t du pixel actuel
@@ -146,7 +146,7 @@ public class SeamCarving
 				int from = (y*itrWidth)+x+1;
 				int to = ((y+1)*itrWidth)+x+1;
 
-				// Si on n'est pas sur la derni�re ligne
+				// Si on n'est pas sur la dernière ligne
 				if(y != itrHeight-1) {
 					// Si le pixel a un voisin de gauche
 					if(x!= 0) {
@@ -189,27 +189,35 @@ public class SeamCarving
 		int dernierSommet = itrWidth*itrHeight+1;
 		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
 		
+		// Suppression du premier sommet qui était fictif
+		cheminInteretMoindre.remove(0);
+		// Suppression du dernier sommet qui était fictif
+		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
+		
 		/* Suppression des pixels de moindre interet */
 		for(Integer sommet: cheminInteretMoindre) {
 			// Si ce n'est pas les sommets fictifs
-			if(sommet > 0 && sommet < cheminInteretMoindre.size()-1) {
-				sommet--;
 				// Calcul du x et y du pixel
-				int x = (sommet-1)%itrWidth;
-				int y = (sommet-1)/itrHeight;
+				int x = (sommet%itrWidth)-1;
+				int y = (sommet/itrHeight)-1;
 				image[y][x]=REMOVE_CELL;
-			}
 		}
 		// Déclaration de notre nouvelle image
-		int[][] imageReduced = new int[itrHeight-1][itrWidth-1];
-		
+		int[][] imageReduced = new int[itrHeight][itrWidth-1];
 		/* Création de la nouvelle image */
 		for(int y=0; y< itrHeight; y++ ) {
-			for(int x=0; x< itrWidth; x++ ) {
+			for(int x=0, xImageReduced=0; x< itrWidth; x++,xImageReduced++ ) {
 				// Valeur du pixel de l'ancienne image
 				int val = image[y][x];
-				if(val!=REMOVE_CELL) {
-					imageReduced[y][x] = val;
+				
+				// Si le pixel doit être retiré
+				if(val==REMOVE_CELL) {
+					// On n'affecte pas la valeur dans imageReduced
+					// et on repositionne notre curseur
+					xImageReduced--;
+				}else {
+					// On affecte la valeur du pixel dans notre nouvelle image
+					imageReduced[y][xImageReduced] = val;
 				}
 			}
 		}
@@ -220,6 +228,7 @@ public class SeamCarving
 		
 		// Ecriture de la nouvelle image dans un nouveau fichier
 		writepgm(imageReduced, newFile);
+		System.out.println("Terminé");
 	}
 	
 	public static ArrayList<Integer> Dijsktra(Graph g, int s, int t) {
@@ -232,8 +241,18 @@ public class SeamCarving
 		
 		// On déclare notre chemin
 		ArrayList<Integer> chemin = new ArrayList<Integer>();
+		
 		// On déclare notre tableau des sommets visités
 		boolean[] visited = new boolean[nbVertices];
+		// On déclare notre tableau contenant les parents de chaque sommet
+		// Ceci nous permettra de retrouver le chemin de cout minimum une fois la fonction terminée
+		int[] parent = new int[nbVertices];
+		// Initialisation de notre tableau visited à 0
+		// Initialisation de notre tableau à -1
+		for(int i =0; i<nbVertices; i++) {
+			visited[i] = false;
+			parent[i] = -1;
+		}
 		
 		int sommetPrioriteMin=-1;
 		while(sommetPrioriteMin != t) {
@@ -260,13 +279,20 @@ public class SeamCarving
 					if(nouvellePriorite < prioriteVoisin) {
 						// On met à jour la priorité de ce voisin
 						h.decreaseKey(e.to, nouvellePriorite);
+						// On met à jour le père de ce voisin
+						parent[e.to] = e.from;
 					}
 				}
 			}
-			// On ajoute le sommet de cout minimum au chemin
-			chemin.add(sommetPrioriteMin);
 		}
-
+		
+		int p=t;
+		while(p!=parent[s]) {
+			System.out.println(p);
+			chemin.add(p);
+			p = parent[p];
+		}
+		Collections.reverse(chemin);
 		return chemin;
 	}
 }
