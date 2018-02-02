@@ -1,3 +1,7 @@
+/**
+ * Classe représentant une file d'attente
+ *
+ */
 class Heap
 {
    int cor[];

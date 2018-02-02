@@ -1,5 +1,9 @@
 import java.io.File;
 
+/**
+ * Classe principal
+ *
+ */
 public class Launcher {
 
 	public static void main(String[] args) {
