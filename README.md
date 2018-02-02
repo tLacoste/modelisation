@@ -34,10 +34,10 @@
         * Fonctionne de la même façon que reduceImage mais pour gérer la suppression d'une ligne
         * Par : Thierry Lacoste
   * Modifications par rapport au sujet :
-        * Le logiciel se lance avec 4 arguments au lieu d'un seul
-        * La méthode tograph n'a pas comme argument le tableau d'intérêt de chaque pixel mais le tableau des pixels de l'image
+      * Le logiciel se lance avec 4 arguments au lieu d'un seul
+      * La méthode tograph n'a pas comme argument le tableau d'intérêt de chaque pixel mais le tableau des pixels de l'image
   * Utilisation du logiciel :
-        * Lancer le Launcher.java avec 4 arguments:
+      * Lancer le Launcher.java avec 4 arguments:
   ```
 <nom_fichier_a_reduire>.pgm <nom_fichier_destination>.pgm <nombre_ligne_suppr> <nombre_colonnes_suppr>
   ```
