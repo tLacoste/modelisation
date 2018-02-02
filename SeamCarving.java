@@ -124,39 +124,120 @@ public class SeamCarving
 		}
 		return tabFacteurInteret;
 	}
+	
+	public static int[][] interestLine(int[][] image){
+		// Hauteur de l'image
+		int imageHeight = image.length;
+		// Largeur de l'image
+		int imageWidth = image[0].length;
+		// Tableau contenant le facteur d'intérêt de chaque pixel
+		int[][] tabFacteurInteret = new int[imageHeight][imageWidth];
+		// Parcours du tableau de l'image
+		for(int x=0; x<imageWidth;x++) {
+			for(int y=0; y<imageHeight; y++) {
+				// Variable stockant la valeur des voisins du pixel
+				int moyVoisinInteret = 0;
+				if(y==0) { 
+					// Si un pixel n'a pas de voisin de haut
+					moyVoisinInteret= image[y+1][x];
+				}else if(y == imageHeight-1) { 
+					// Si un pixel n'a pas de voisin de bas
+					moyVoisinInteret = image[y-1][x];
+				}else { 
+					// Si un pixel a un voisin de haut et un voisin de bas
+					moyVoisinInteret = (image[y-1][x]+image[y+1][x])/2;
+				}
+				// Calcul du facteur d'int�r�t du pixel et ajout au tableau.
+				tabFacteurInteret[y][x] = Math.abs(image[y][x] - moyVoisinInteret);
+			}
+		}
+		return tabFacteurInteret;
+	}
 
 	public static Graph tograph(int[][] image) {
 		int[][] itr = interest(image);
-		int itrWidth = itr[0].length;
-		int itrHeight = itr.length;
+		// Hauteur de l'image
+		int imageHeight = image.length;
+		// Largeur de l'image
+		int imageWidth = image[0].length;
 		// Nombre de sommets
-		int nbSommets= itrWidth*itrHeight+2;
+		int nbSommets= imageWidth*imageHeight+2;
 		// Instanciation du Graph
 		Graph g = new Graph(nbSommets);
 
 		// Création des arêtes du premier sommet
-		for(int x=0; x<itrWidth; x++) {
+		for(int x=0; x<imageWidth; x++) {
 			g.addEdge(new Edge(0, x+1, 0));
 		}
 		// Calcul du dernier sommet
-		int dernierSommet = itrHeight*itrWidth +1;
+		int dernierSommet = imageHeight*imageWidth +1;
 		
 		// Création des arêtes des sommets représentant les pixels
-		for(int y=0; y<itrHeight; y++) {
-			for(int x=0; x<itrWidth; x++) {
+		for(int y=0; y<imageHeight; y++) {
+			for(int x=0; x<imageWidth; x++) {
 				// Facteur d'int�r�t du pixel actuel
 				int facteurInteret = itr[y][x];
 
-				int from = (y*itrWidth)+x+1;
-				int to = ((y+1)*itrWidth)+x+1;
+				int from = (y*imageWidth)+x+1;
+				int to = ((y+1)*imageWidth)+x+1;
 
 				// Si on n'est pas sur la dernière ligne
-				if(y != itrHeight-1) {
+				if(y != imageHeight-1) {
 					// Si le pixel a un voisin de gauche
 					if(x!= 0) {
 						g.addEdge(new Edge(from, to-1, facteurInteret));
 					} // Si le pixel a un voisin de droite
-					if(x!=itrWidth-1) {
+					if(x!=imageWidth-1) {
+						g.addEdge(new Edge(from, to+1, facteurInteret));
+					}
+				}else {
+					// Sinon si on est bien à la dernière ligne
+					// on change la destination
+					// pour quelle corresponde au dernier sommet
+					to= dernierSommet;
+				}
+
+				// Dans tous les cas on relie le pixel à celui d'en dessous
+				g.addEdge(new Edge(from, to, facteurInteret));
+			}
+		}
+		return g;
+	}
+	
+	public static Graph tographLine(int[][] image) {
+		int[][] itr = interestLine(image);
+		// Hauteur de l'image
+		int imageHeight = image.length;
+		// Largeur de l'image
+		int imageWidth = image[0].length;
+		// Nombre de sommets
+		int nbSommets= imageWidth*imageHeight+2;
+		// Instanciation du Graph
+		Graph g = new Graph(nbSommets);
+
+		// Création des arêtes du premier sommet
+		for(int y=0; y<imageHeight; y++) {
+			g.addEdge(new Edge(0, y+1, 0));
+		}
+		// Calcul du dernier sommet
+		int dernierSommet = imageHeight*imageWidth +1;
+		
+		// Création des arêtes des sommets représentant les pixels
+		for(int x=0; x<imageWidth; x++) {
+			for(int y=0; y<imageHeight; y++) {
+				// Facteur d'int�r�t du pixel actuel
+				int facteurInteret = itr[y][x];
+
+				int from = (x*imageHeight)+y+1;
+				int to = ((x+1)*imageHeight)+y+1;
+
+				// Si on n'est pas sur la dernière ligne
+				if(x != imageWidth-1) {
+					// Si le pixel a un voisin de haut
+					if(y!= 0) {
+						g.addEdge(new Edge(from, to-1, facteurInteret));
+					} // Si le pixel a un voisin de bas
+					if(y!=imageHeight-1) {
 						g.addEdge(new Edge(from, to+1, facteurInteret));
 					}
 				}else {
@@ -224,7 +305,62 @@ public class SeamCarving
 				}
 
 				// Dans tous les cas on relie le pixel à celui d'en dessous
+				g.addEdge(new Edge(from, to, Math.abs(intensity)));
+			}
+		}
+		return g;
+	}
+	public static Graph tographLineWithIntensity(int[][] image) {
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Nombre de sommets
+		int nbSommets= imageWidth*imageHeight+2;
+		// Instanciation du Graph
+		Graph g = new Graph(nbSommets);
+
+		// Création des arêtes du premier sommet
+		for(int y=0; y<imageHeight; y++) {
+			g.addEdge(new Edge(0, y+1, 0));
+		}
+		// Calcul du dernier sommet
+		int dernierSommet = imageHeight*imageWidth +1;
+		
+		// Création des arêtes des sommets représentant les pixels
+		for(int x=0; x<imageWidth; x++) {
+			for(int y=0; y<imageHeight; y++) {
+				// Intensité du pixel actuel
+				int intensity = 0;
 				
+				int from = (x*imageHeight)+y+1;
+				int to = ((x+1)*imageHeight)+y+1;
+
+				// Si on n'est pas sur la dernière ligne
+				if(x != imageWidth-1) {
+					// Si le pixel a un voisin de gauche
+					if(y!= 0) {
+						g.addEdge(new Edge(from, to-1, Math.abs(image[y-1][x] - image[y][x+1])));
+					}
+					// Si le pixel a un voisin de droite
+					if(y!=imageHeight-1) {
+						g.addEdge(new Edge(from, to+1, Math.abs(image[y+1][x]-image[y][x+1])));
+					}
+				}else {
+					// Sinon si on est bien à la dernière ligne
+					// on change la destination
+					// pour quelle corresponde au dernier sommet
+					to= dernierSommet;
+				}
+				
+				/* Calcul de l'intensité */
+				if(y== 0) {
+					intensity = image[y+1][x];
+				}else if(y==imageHeight-1){
+					intensity = image[y-1][x];
+				}else{
+					intensity = image[y+1][x] - image[y-1][x];
+				}
+
+				// Dans tous les cas on relie le pixel à celui d'en dessous
 				g.addEdge(new Edge(from, to, Math.abs(intensity)));
 			}
 		}
@@ -287,12 +423,75 @@ public class SeamCarving
 		}
 		return imageReduced;
 	}
+	
+	public int[][] reduceImageLine(int[][] image, boolean useIntensity){
+		// Déclaration de la valeur signifiant la suppression du pixel
+		int REMOVE_CELL = -1;
+		// Calcul de l'intérêt des pixels
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Déclaration de notre nouvelle image
+		int[][] imageReduced = new int[imageHeight-1][imageWidth];
+		// Création du graphe
+		Graph g;
+		if(useIntensity) {
+			g= tographLineWithIntensity(image);
+		}else {
+			g = tographLine(image);
+		}
 
-	public SeamCarving(String fileSrc, String fileDest) {
+		/* Récupération de la colonne à supprimer */
+		int premierSommet = 0;
+		int dernierSommet = imageWidth*imageHeight+1;
+		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
+
+		// Suppression du premier sommet qui était fictif
+		cheminInteretMoindre.remove(0);
+		// Suppression du dernier sommet qui était fictif
+		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
+
+		/* Suppression des pixels de moindre interet */
+		for(Integer sommet: cheminInteretMoindre) {
+			// Diminution des sommets car le premier sommet fictif
+			// Prenait la cellule 0
+			sommet --;
+			// Calcul du x et y du pixel
+			int x = (sommet/imageHeight);
+			int y = (sommet%imageHeight);
+			image[y][x]=REMOVE_CELL;
+		}
+
+		/* Création de la nouvelle image */
+		for(int x=0; x< imageWidth; x++ ) {
+			for(int y=0, yImageReduced=0; y< imageHeight; y++,yImageReduced++ ) {
+				// Valeur du pixel de l'ancienne image
+				int val = image[y][x];
+
+				// Si le pixel doit être retiré
+				if(val==REMOVE_CELL) {
+					// On n'affecte pas la valeur dans imageReduced
+					// et on repositionne notre curseur
+					yImageReduced--;
+				}else {
+					// On affecte la valeur du pixel dans notre nouvelle image
+					imageReduced[yImageReduced][x] = val;
+				}
+			}
+		}
+		return imageReduced;
+	}
+
+	/**
+	 * Constructeur
+	 * @param fileSrc Fichier source qui sera modifié
+	 * @param fileDest Fichier de destination, résultat des modifications du fichier source
+	 * @param nbLineToRemove Nombre de lignes à supprimer
+	 * @param nbColumnToRemove Nombre de colonnes à supprimer
+	 */
+	public SeamCarving(String fileSrc, String fileDest, int nbLineToRemove, int nbColumnToRemove) {
 		// Récupération des pixels de l'image
 		int[][] image = readpgm(fileSrc);
-		int nbColumnToRemove = 50;
-		int nbLineToRemove = 50;
+		boolean useIntensity = true;
 		
 		/* Vérification de la taille du fichier */
 		// S'il n'y a pas assez de pixels en largeur
@@ -305,9 +504,14 @@ public class SeamCarving
 			System.out.println("Hauteur de l'image insuffisante");
 			System.exit(1);
 		}
-		// Boucle de suppression des 50 colonnes
+		// Boucle de suppression des colonnes
 		for(int i =0; i<nbColumnToRemove; i++) {
-			image = reduceImage(image, false);
+			image = reduceImage(image, useIntensity);
+		}
+		
+		// Boucle de suppression des lignes
+		for(int i =0; i<nbLineToRemove; i++) {
+			image = reduceImageLine(image, useIntensity);
 		}
 		
 		// Ecriture de la nouvelle image dans un nouveau fichier
@@ -370,12 +574,18 @@ public class SeamCarving
 			}
 		}
 
+		/* 
+		 * Récupération du chemin minimum en prenant le dernier sommet et
+		 * en remontant via leur parent 
+		 * */
 		int p=t;
 		while(p!=parent[s]) {
 			chemin.add(p);
 			p = parent[p];
 		}
+		// On avait le chemin de cout minimum de t à s, il faut donc le retourner
 		Collections.reverse(chemin);
+		
 		return chemin;
 	}
 }
