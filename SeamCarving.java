@@ -247,6 +247,15 @@ public class SeamCarving
 	}
 
 	
+	/**
+	 * Réduction d'une image
+	 * @param image
+	 * 				Image a réduire
+	 * @param useIntensity
+	 * 				Intensité
+	 * @return
+	 * 			ImageReduced
+	 */
 	public int[][] reduceImage(int[][] image, boolean useIntensity){
 		// DÃ©claration de la valeur signifiant la suppression du pixel
 		int REMOVE_CELL = -1;
