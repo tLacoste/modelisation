@@ -71,10 +71,10 @@ public class SeamCarving
 			for(int y=0;y<imageHeight;y++) {
 				for(int x=0;x<imageWidth;x++) {
 					// Ecriture de la valeur du pixel
-					fw.write(image[y][x]+" ");
+					bw.write(image[y][x]+" ");
 				}
 				// Retour à la ligne
-				fw.write("\n");
+				bw.write("\n");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -197,10 +197,12 @@ public class SeamCarving
 
 		/* Suppression des pixels de moindre interet */
 		for(Integer sommet: cheminInteretMoindre) {
-			// Si ce n'est pas les sommets fictifs
+			// Diminution des sommets car le premier sommet fictif
+			// Prenait la cellule 0
+			sommet --;
 			// Calcul du x et y du pixel
-			int x = (sommet%itrWidth)-1;
-			int y = (sommet/itrHeight)-1;
+			int x = (sommet%itrWidth);
+			int y = (sommet/itrWidth);
 			image[y][x]=REMOVE_CELL;
 		}
 
@@ -224,20 +226,16 @@ public class SeamCarving
 		return imageReduced;
 	}
 
-	public SeamCarving(String file) {
+	public SeamCarving(String fileSrc, String fileDest) {
 		// Récupération des pixels de l'image
-		int[][] image = readpgm(file);
+		int[][] image = readpgm(fileSrc);
 		// Boucle de suppression des 50 colonnes
 		for(int i =0; i<50; i++) {
 			image = reduceImage(image);
 		}
-
-		/* Calcul du nouveau nom de fichier */
-		String fileWithoutExtension = file.substring(0, file.lastIndexOf('.'));
-		String newFile = fileWithoutExtension+"_reduced.pgm";
 		
 		// Ecriture de la nouvelle image dans un nouveau fichier
-		writepgm(image, newFile);
+		writepgm(image, fileDest);
 		System.out.println("Terminé");
 	}
 
@@ -298,7 +296,6 @@ public class SeamCarving
 
 		int p=t;
 		while(p!=parent[s]) {
-			System.out.println(p);
 			chemin.add(p);
 			p = parent[p];
 		}

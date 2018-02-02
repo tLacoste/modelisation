@@ -3,17 +3,13 @@ import java.io.File;
 public class Launcher {
 
 	public static void main(String[] args) {
-		if(args.length != 1) {
-			System.out.println("Arguments invalides : java -jar <nom_fichier>.pgm");
+		if(args.length != 2) {
+			System.out.println("Arguments invalides : java -jar <nom_fichier_a_reduire>.pgm <nom_fichier_destination>.pgm");
 			System.exit(1);
 		}
-		String file = args[0];
-		File f = new File(file);
-		System.out.println(f.getAbsolutePath());
-		if(f.exists() && !f.isDirectory()) { 
-		    System.out.println("Exist");
-		}
-		SeamCarving sm = new SeamCarving(file);
+		String fileSrc = args[0];
+		String fileDest = args[1];
+		SeamCarving sm = new SeamCarving(fileSrc, fileDest);
 	}
 	
 }
