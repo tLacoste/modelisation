@@ -1,6 +1,11 @@
 import java.util.ArrayList;
 import java.io.*;
 
+/**
+ * Classe représenant un graph
+ * @author Marvin
+ *
+ */
 public class Graph
 {
    private ArrayList<Edge>[] adj;
@@ -17,11 +22,18 @@ public class Graph
 		
 	 }
 
+
+
    public int vertices()
 	 {
 		return V;
 	 }
    
+   /**
+    * Ajout d'une arrête
+    * @param e
+    * 			Arrête
+    */
    public void addEdge(Edge e)
 	 {
 		int v = e.from;
@@ -44,6 +56,11 @@ public class Graph
 		return n;
 	 }      
    
+   /**
+    * Renvoit la liste des arrêtes
+    * @return list
+    * 				Liste des arrêtes
+    */			
    public Iterable<Edge> edges()
 	 {
 		ArrayList<Edge> list = new ArrayList<Edge>();
@@ -55,7 +72,11 @@ public class Graph
         return list;
     }
    
-   
+   /**
+    * Fonction d'ecriture de fichier
+    * @param s
+    * 			Chaine a ecrire
+    */
    public void writeFile(String s)
 	 {
 		try

@@ -1,3 +1,7 @@
+/**
+ * Classe représentant une arrête
+ * 
+ */
 class Edge
 {
    int from;

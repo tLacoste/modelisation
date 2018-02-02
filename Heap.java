@@ -1,3 +1,8 @@
+/**
+ * Classe fournit
+ * File de priorité
+ *
+ */
 class Heap
 {
    int cor[];

@@ -5,7 +5,7 @@ public class SeamCarving
 {
 
 	/**
-	 * Mï¿½thode readpgm
+	 * Méthode readpgm
 	 * Permet de lire un fichier .pgm
 	 * @param fn le nom du fichier
 	 * @return renvoie un tableau de pixels
@@ -43,10 +43,10 @@ public class SeamCarving
 	}
 
 	/**
-	 * Mï¿½thode writepgm
-	 * Permet d'ï¿½crire un fichier .pgm
+	 * Méthode writepgm
+	 * Permet d'ecrire un fichier .pgm
 	 * @param image tableau des pixels de l'image
-	 * @param filename nom du fichier crï¿½ï¿½
+	 * @param filename nom du fichier cree
 	 */
 	public static void writepgm(int[][] image, String filename) {
 		// DÃ©claration des variables
@@ -94,7 +94,7 @@ public class SeamCarving
 	 * Methode interest
 	 * Permet d'avoir le facteur d'interet de chacun des pixels du tableau
 	 * @param image tableau des pixels de l'image
-	 * @return un tableau de valeur de facteur d'intï¿½rï¿½t de chaque pixel
+	 * @return un tableau de valeur de facteur d'interet de chaque pixel
 	 */
 	public static int[][] interest(int[][] image){
 		// Hauteur de l'image
@@ -125,6 +125,13 @@ public class SeamCarving
 		return tabFacteurInteret;
 	}
 
+	/**
+	 * Creer le graphe correspondant au tableau fournit en parametre
+	 * @param image
+	 * 				Tableau représentant l'image
+	 * @return g
+	 * 			Graphe correspondant au tableau image
+	 */
 	public static Graph tograph(int[][] image) {
 		int[][] itr = interest(image);
 		int itrWidth = itr[0].length;
@@ -173,6 +180,13 @@ public class SeamCarving
 		return g;
 	}
 	
+	/**
+	 * Creer le graphe correspondent au tableau fournit en paramettre
+	 * @param image
+	 * 				Tableau représentant l'image
+	 * @return g
+	 * 				Graphe correspondent au tableau image
+	 */
 	public static Graph tographWithIntensity(int[][] image) {
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
@@ -231,6 +245,7 @@ public class SeamCarving
 		return g;
 	}
 
+	
 	public int[][] reduceImage(int[][] image, boolean useIntensity){
 		// DÃ©claration de la valeur signifiant la suppression du pixel
 		int REMOVE_CELL = -1;
@@ -288,6 +303,11 @@ public class SeamCarving
 		return imageReduced;
 	}
 
+	/**
+	 * Reduit la taille de l'image en limitant les changements visuels
+	 * @param fileSrc
+	 * @param fileDest
+	 */
 	public SeamCarving(String fileSrc, String fileDest) {
 		// RÃ©cupÃ©ration des pixels de l'image
 		int[][] image = readpgm(fileSrc);
@@ -315,6 +335,17 @@ public class SeamCarving
 		System.out.println("TerminÃ©");
 	}
 	
+	/**
+	 * Algorithme de recherche de chemin le plus cour entre 2 sommets
+	 * @param g
+	 * 			Graphe fournit 
+	 * @param s
+	 * 			Sommmet de départ
+	 * @param t	
+	 * 			Sommet d'arrivé
+	 * @return
+	 * 			Chemin rendu
+	 */
 	public static ArrayList<Integer> Dijsktra(Graph g, int s, int t) {
 		int nbVertices = g.vertices();
 

@@ -1,6 +1,14 @@
 class Test
 {
    static boolean visite[];
+   
+   /**
+    * Methode de parcour des noeuds du graphe
+    * @param g
+    * 			Graphe parcouru
+    * @param u
+    * 			Premier sommet
+    */
    public static void dfs(Graph g, int u)
 	 {
 		visite[u] = true;
@@ -10,6 +18,9 @@ class Test
 			dfs(g,e.to);
 	 }
 
+   /**
+    * Methodes de test de la classe heap (file de priorit�)
+    */
    public static void testHeap()
 	 {
 		// Crée ue file de priorité contenant les entiers de 0 à 9, tous avec priorité +infty
@@ -32,6 +43,9 @@ class Test
 		// La file contient maintenant uniquement les éléments 0,1,5,6,7,8,9 avec priorité +infini
 	 }
    
+   /**
+    * Test de la cr�ation d'un graph
+    */
    public static void testGraph()
 	 {
 		int n = 5;
@@ -55,6 +69,10 @@ class Test
 		dfs(g, 3);
 	 }
    
+   /**
+    * Classe de lancement des m�thodes
+    * @param args
+    */
    public static void main(String[] args)
 	 {
 		testHeap();
