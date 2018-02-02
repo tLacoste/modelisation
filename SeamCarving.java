@@ -1,12 +1,11 @@
 import java.util.ArrayList;
 import java.io.*;
 import java.util.*;
-
 public class SeamCarving
 {
 
 	/**
-	 * M�thode readpgm
+	 * M�thode readpgm
 	 * Permet de lire un fichier .pgm
 	 * @param fn le nom du fichier
 	 * @return renvoie un tableau de pixels
@@ -44,13 +43,13 @@ public class SeamCarving
 	}
 
 	/**
-	 * M�thode writepgm
-	 * Permet d'�crire un fichier .pgm
+	 * M�thode writepgm
+	 * Permet d'�crire un fichier .pgm
 	 * @param image tableau des pixels de l'image
-	 * @param filename nom du fichier cr��
+	 * @param filename nom du fichier cr��
 	 */
-	public void writepgm(int[][] image, String filename) {
-		// D�claration des variables
+	public static void writepgm(int[][] image, String filename) {
+		// Déclaration des variables
 		FileWriter fw = null;
 		BufferedWriter bw = null;
 		int imageHeight = image.length;
@@ -62,7 +61,7 @@ public class SeamCarving
 			bw = new BufferedWriter(fw);
 			// Ecriture du type de fichier
 			bw.write("P2\n");
-			// Ecriture du moyen de cr�ation du fichier (facultatif)
+			// Ecriture du moyen de création du fichier (facultatif)
 			bw.write("#File written by SeamCarving.java\n");
 			// Ecriture de la largeur et hauteur du fichier
 			bw.write(imageWidth+" "+imageHeight+"\n");
@@ -72,10 +71,10 @@ public class SeamCarving
 			for(int y=0;y<imageHeight;y++) {
 				for(int x=0;x<imageWidth;x++) {
 					// Ecriture de la valeur du pixel
-					fw.write(image[y][x]+" ");
+					bw.write(image[y][x]+" ");
 				}
-				// Retour � la ligne
-				fw.write("\n");
+				// Retour à la ligne
+				bw.write("\n");
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -92,17 +91,17 @@ public class SeamCarving
 	}  
 
 	/**
-	 * M�thode interest
-	 * Permet d'avoir le facteur d'int�r�t de chacun des pixels du tableau
+	 * Methode interest
+	 * Permet d'avoir le facteur d'interet de chacun des pixels du tableau
 	 * @param image tableau des pixels de l'image
-	 * @return un tableau de valeur de facteur d'int�r�t de chaque pixel
+	 * @return un tableau de valeur de facteur d'int�r�t de chaque pixel
 	 */
-	public int[][] interest(int[][] image){
+	public static int[][] interest(int[][] image){
 		// Hauteur de l'image
 		int imageHeight = image.length;
 		// Largeur de l'image
 		int imageWidth = image[0].length;
-		// Tableau contenant le facteur d'int�r�t de chaque pixel
+		// Tableau contenant le facteur d'intérêt de chaque pixel
 		int[][] tabFacteurInteret = new int[imageHeight][imageWidth];
 		// Parcours du tableau de l'image
 		for(int y=0; y<imageHeight; y++) {
@@ -119,248 +118,474 @@ public class SeamCarving
 					// Si un pixel a un voisin de gauche et un voisin de droite
 					moyVoisinInteret = (image[y][x-1]+image[y][x+1])/2;
 				}
-				// Calcul du facteur d'int�r�t du pixel et ajout au tableau.
+				// Calcul du facteur d'int�r�t du pixel et ajout au tableau.
+				tabFacteurInteret[y][x] = Math.abs(image[y][x] - moyVoisinInteret);
+			}
+		}
+		return tabFacteurInteret;
+	}
+	
+	public static int[][] interestLine(int[][] image){
+		// Hauteur de l'image
+		int imageHeight = image.length;
+		// Largeur de l'image
+		int imageWidth = image[0].length;
+		// Tableau contenant le facteur d'intérêt de chaque pixel
+		int[][] tabFacteurInteret = new int[imageHeight][imageWidth];
+		// Parcours du tableau de l'image
+		for(int x=0; x<imageWidth;x++) {
+			for(int y=0; y<imageHeight; y++) {
+				// Variable stockant la valeur des voisins du pixel
+				int moyVoisinInteret = 0;
+				if(y==0) { 
+					// Si un pixel n'a pas de voisin de haut
+					moyVoisinInteret= image[y+1][x];
+				}else if(y == imageHeight-1) { 
+					// Si un pixel n'a pas de voisin de bas
+					moyVoisinInteret = image[y-1][x];
+				}else { 
+					// Si un pixel a un voisin de haut et un voisin de bas
+					moyVoisinInteret = (image[y-1][x]+image[y+1][x])/2;
+				}
+				// Calcul du facteur d'int�r�t du pixel et ajout au tableau.
 				tabFacteurInteret[y][x] = Math.abs(image[y][x] - moyVoisinInteret);
 			}
 		}
 		return tabFacteurInteret;
 	}
 
-	public Graph tograph(int[][] itr) {
-		int itrWidth = itr[0].length;
-		int itrHeight = itr.length;
+	public static Graph tograph(int[][] image) {
+		int[][] itr = interest(image);
+		// Hauteur de l'image
+		int imageHeight = image.length;
+		// Largeur de l'image
+		int imageWidth = image[0].length;
 		// Nombre de sommets
-		int nbSommets= itrWidth*itrHeight+2;
+		int nbSommets= imageWidth*imageHeight+2;
 		// Instanciation du Graph
 		Graph g = new Graph(nbSommets);
 
-		// Cr�ation des ar�tes du premier sommet
-		for(int x=0; x<itrWidth; x++) {
+		// Création des arêtes du premier sommet
+		for(int x=0; x<imageWidth; x++) {
 			g.addEdge(new Edge(0, x+1, 0));
 		}
-		// Cr�ation des ar�tes des sommets repr�sentant les pixels
-		for(int y=0; y<itrHeight; y++) {
-			for(int x=0; x<itrWidth; x++) {
-				// Facteur d'int�r�t du pixel actuel
+		// Calcul du dernier sommet
+		int dernierSommet = imageHeight*imageWidth +1;
+		
+		// Création des arêtes des sommets représentant les pixels
+		for(int y=0; y<imageHeight; y++) {
+			for(int x=0; x<imageWidth; x++) {
+				// Facteur d'int�r�t du pixel actuel
 				int facteurInteret = itr[y][x];
 
-				int from = (y*itrWidth)+x+1;
-				int to = ((y+1)*itrWidth)+x+1;
+				int from = (y*imageWidth)+x+1;
+				int to = ((y+1)*imageWidth)+x+1;
 
-				// Si on n'est pas sur la derni�re ligne
-				if(y != itrHeight-1) {
+				// Si on n'est pas sur la dernière ligne
+				if(y != imageHeight-1) {
 					// Si le pixel a un voisin de gauche
 					if(x!= 0) {
-						g.addEdge(new Edge(from, to+1, facteurInteret));
-					} // Si le pixel a un voisin de droite
-					if(x!=itrWidth-1) {
 						g.addEdge(new Edge(from, to-1, facteurInteret));
+					} // Si le pixel a un voisin de droite
+					if(x!=imageWidth-1) {
+						g.addEdge(new Edge(from, to+1, facteurInteret));
 					}
 				}else {
-					// Sinon si on est bien � la derni�re ligne
+					// Sinon si on est bien à la dernière ligne
 					// on change la destination
 					// pour quelle corresponde au dernier sommet
-					to= itrWidth*itrHeight+1;
+					to= dernierSommet;
 				}
 
-				// Dans tous les cas on relie le pixel � celui d'en dessous
+				// Dans tous les cas on relie le pixel à celui d'en dessous
 				g.addEdge(new Edge(from, to, facteurInteret));
 			}
-		}
-		// Cr�ation des ar�tes au dernier sommet
-		for(int x=0; x<itrWidth; x++) {
-			g.addEdge(new Edge(0, x+1, 0));
 		}
 		return g;
 	}
 	
-	/**
-	 * Renvoit le chemin le plus cour d'un graphe g entre les sommets s et t
-	 * @param g
-	 * 			Graphe
-	 * @param s	
-	 * 			Sommet de depart
-	 * @param t
-	 * 			Sommet d'arrive
-	 * @return
-	 * 		   Chemin le plus court sous la forme d'un tableau (suite de sommet)
-	 */
-	public int[] Dijsktra(Graph g, int s, int t) 
-	{
-		//							Partie 1
-		//-------------------------------------------------------------------
-		// Tableau inverse a celui a retourner a la fin de la methode
-		int[] cheminPlusCour = null;
-		// Parcour de tous les sommets possible depuis celui de depart
-		Test.dfs(g, s); 
-		// Verification qu'un chemin existe entre les deux sommets
-		if(s > t || Test.visite[t] != true)
-		{
-			System.out.println("Erreur : Il n'existe aucun chemin entre les deux sommets"); 
+	public static Graph tographLine(int[][] image) {
+		int[][] itr = interestLine(image);
+		// Hauteur de l'image
+		int imageHeight = image.length;
+		// Largeur de l'image
+		int imageWidth = image[0].length;
+		// Nombre de sommets
+		int nbSommets= imageWidth*imageHeight+2;
+		// Instanciation du Graph
+		Graph g = new Graph(nbSommets);
+
+		// Création des arêtes du premier sommet
+		for(int y=0; y<imageHeight; y++) {
+			g.addEdge(new Edge(0, y+1, 0));
 		}
-		// Si le noeud de depart et d'arrive sont identique
-		if(s == t)
-		{
-			cheminPlusCour[0] = s;
-			return cheminPlusCour;
-		}
+		// Calcul du dernier sommet
+		int dernierSommet = imageHeight*imageWidth +1;
 		
-		//						    Partie 2
-		//---------------------------------------------------------------------
-		// Tableau a 3 colonnes : Numero du noeud (Colonne 0), Poids du noeud = Interet du pixel (Colonne 1), Boolean "Deja Parcouru ?" (Colonne 2)
-		String[][] tableauPoids = null; 
-		// Tableau a 2 colonnes : Numero du noeud (Colonne 0), Numero de l'antecedent (Colonne 1)
-		String[][] tableauAntecedents = null;
-		int i; // Represente la colonnes actuel du tableau : 0, 1 ou 2
-		int j; // Repr�sente le noeud du graphe pour chaque colonne du tableau
-		int arg = 0;  // Variable permettant de passer facilement d'un entier a un string
-		// Parcour des 3 colonnes (seulement 2 pour le tableau des antecedents)
-		for(i = 0; i < 3; ++i)
-		{
-			// Initialisation du tableau des poids et du tableau des antecedents
-			for(j = 0; j < g.getAdj().length-1; ++j) // j doit correspondre au numero du noeud dans le tableau adj de la classe Graph
-			{
-				// Creation de la colonne 0 pour les deux tableaux
-				if(i == 0)
-				{
-					arg = j + 1;
-					// Tableau des poids colonne 0
-					tableauPoids[i][j] = Integer.toString(arg);
-					// Tableau des antecedents colonne 0
-					tableauAntecedents[i][j] = Integer.toString(arg);
-				}
-				// Creation de la colonne 1 pour les deux tableaux
-				if (i == 1)
-				{
-					// Tableau des poids colonne 1
-					if(j != s)
-					{
-						arg = -1; // Cas ou la case de la colonne 1 n'est pas la case de depart => Poid negatif
+		// Création des arêtes des sommets représentant les pixels
+		for(int x=0; x<imageWidth; x++) {
+			for(int y=0; y<imageHeight; y++) {
+				// Facteur d'int�r�t du pixel actuel
+				int facteurInteret = itr[y][x];
+
+				int from = (x*imageHeight)+y+1;
+				int to = ((x+1)*imageHeight)+y+1;
+
+				// Si on n'est pas sur la dernière ligne
+				if(x != imageWidth-1) {
+					// Si le pixel a un voisin de haut
+					if(y!= 0) {
+						g.addEdge(new Edge(from, to-1, facteurInteret));
+					} // Si le pixel a un voisin de bas
+					if(y!=imageHeight-1) {
+						g.addEdge(new Edge(from, to+1, facteurInteret));
 					}
-					else
-					{
-						arg = 0; // Cas ou la case de la colonne 1 correspond au noeud de depart => Poids de 0
-					}
-					tableauPoids[i][j] = Integer.toString(arg);
-					// Tableau des antecedents colonne 1
-					tableauAntecedents[i][j] = "Aucun";
+				}else {
+					// Sinon si on est bien à la dernière ligne
+					// on change la destination
+					// pour quelle corresponde au dernier sommet
+					to= dernierSommet;
 				}
-				// Creation de la colonne 2 pour le tableau des poids
-				if(i == 2)
-				{
-					tableauPoids[i][j] = "Non";
-				}
+
+				// Dans tous les cas on relie le pixel à celui d'en dessous
+				g.addEdge(new Edge(from, to, facteurInteret));
 			}
 		}
-		
-		//								Partie 3
-		//------------------------------------------------------------------
-		// On recherche le noeud non parcouru ayant le poid le plus faible, puis on le parcour
-		int indiceNoeudActuel = s; // Initialisation de l'indice du noeud actuel au noeud de depart
-		ArrayList<Edge> listeEdgeNoeudActuel = null; // Initialisation. Correspond a la liste des Edges liee au noeudActuel
-		int[] filsNoeudActuel = null; // Liste des fils du noeud actuel, utile pour la partie 4		
-		int[] costEdgePereFils = null; // List des couts des noeuds entre le noeud actuel et son fils. Va en paralelle avec le tableau precedent.
-		int pos = 0; // Position dans le tableau fulsNoeudActuel
-		i = 1; // On va parcourir la colonne 1 du tableau des poids
-		int poidPlusFaible = 0; // Variable de stockage du poid le plus faible
-		int indiceNoeud = -1; // Variable de stockage de l'indice du noeud de poid le plus faible = Numero du noeud dans la colonne 0
-		boolean finit = false; // Termine la boucle while quand le noeud de poids le plus faible est le noeud d'arrive
-		
-		while(finit == false)
-		{
-			////////BOUCLE TANT QUE/////////
-			for (j = 0; j < g.getAdj().length-1; ++j)
-			{
-				if (Integer.parseInt(tableauPoids[i][j]) <= poidPlusFaible  // Trouver le poid le plus faible, poid de 0 = noeud de depart
-					&& Integer.parseInt(tableauPoids[i][j]) != -1 // Poid different de -1 => pour eviter qu'un poids negatif soit considerer comme le poids le plus faible  
-					&& tableauPoids[2][j] == "Non") // Uniquement les noeuds non parcouru
-				{
-					poidPlusFaible = Integer.parseInt(tableauPoids[i][j]);
-					indiceNoeud = j + 1 ; // j + 1 car j commence a 0 et on veut que j corresponde au numero du noeud 
-				}
-			}
-			tableauPoids[2][indiceNoeud] = "Oui"; // On parcour le noeud non parcouru de poids le plus faible
-			// On s'arrete si le noeud d'arrive est parcouru
-			if(indiceNoeud == t)
-			{
-				finit = true;
-				break;
-			}
-			//								Partie 4
-			//------------------------------------------------------------------------
-			// Recherche et changement du poid des fils du noeud actuel
-			indiceNoeudActuel = indiceNoeud; // Mise a jour de l'indice du noeud actuel
-			listeEdgeNoeudActuel = g.adjBis(indiceNoeudActuel); // noeudActuel prend la valeur de la liste des Edges lie a ce noeud
-			// On doit trouver tous les fils du noeudActuel, on regarde chaque edge lies au noeud actuel
-			for(Edge e : listeEdgeNoeudActuel)
-			{
-				// Si le noeud actuel a un edge d'on le point de depart ("From") est lui-meme = si le noeud actuel a un fils
-				if(e.getFrom() == indiceNoeudActuel)  
-				{
-					filsNoeudActuel[pos] = e.getTo(); // On stock l'indice du fils du noeudActuel
-					costEdgePereFils[pos] = e.getCost(); // On stock le poid du Edge entre le pere et le fils
-					pos += 1; // Incremente la position pour le prochaine ajout
-				}
-			}
-			
-			// Pour chaque fils du noeud actuel
-			for(int k = 0; k < filsNoeudActuel.length; ++k)
-			{
-				int poidsNoeudPere = Integer.parseInt(tableauPoids[1][indiceNoeudActuel]); // On stock le poids du noeud pere/actuel pour y acceder plus facilement
-				int poidsLiaisonPereFils = costEdgePereFils[k]; // On stock le poid du Edge entre le pere et le fils
-				// Condition :
-				// Si le noeud fils na pas encore etait parcouru
-				// ET Si 
-				//  	.Soit la distance pour aller du depart au noeud fils en passant par le noeud pere 
-				// 		 est plus petite que la distance pour aller du depart au noeud fils en passant par 
-				//		 un autre chemin
-				//      . Soit le poid du noeud fils est = a -1
-				if(tableauPoids[2][filsNoeudActuel[k]] != "Oui")
-				{
-					if(((poidsNoeudPere + poidsLiaisonPereFils) < Integer.parseInt(tableauPoids[1][filsNoeudActuel[k]])) 
-					     || (tableauPoids[1][filsNoeudActuel[k]] == Integer.toString(-1)) )
-					{
-						// Le poids du fils prend la valeur du chemin du debut au fils en passant par le pere
-						tableauPoids[1][filsNoeudActuel[k]] = Integer.toString(poidsNoeudPere + poidsLiaisonPereFils);
-						// On indique que l'antecedent du noeud fils est le noeud pere
-						tableauAntecedents[1][filsNoeudActuel[k]] = Integer.toString(indiceNoeudActuel);
-					}			
-				}
-			}
-		}
-				
-		//								Partie 5
-		//------------------------------------------------------------------------
-		// Construction du tableau du chemin  le plus cour via le tableau des antecedents
-		boolean stop = false;
-		String antecedentActuel = tableauAntecedents[1][t]; // Indice antecedent actuel a ranger dans le tableau
-		int compteurAntecedent = 0; // Permet de designer l'indice du tableau a return et de compter les antecedents (-1)
-		cheminPlusCour[compteurAntecedent] = Integer.parseInt(antecedentActuel);
-		// Temps que le tableau n'est pas remplis
-		while(stop == false)
-		{
-			// Si l'antecedent actuel est le noeud de depart
-			if(Integer.parseInt(antecedentActuel) == s)
-			{
-				stop = true;
-				break;
-			}
-			antecedentActuel = tableauAntecedents[1][Integer.parseInt(antecedentActuel)];
-			compteurAntecedent += 1;
-			cheminPlusCour[compteurAntecedent] = Integer.parseInt(antecedentActuel);
-		}
-		
-		// On doit envoyer le tableau inverse a celui construit car on la construit 
-		// en partant du noeud d'arrive via les antecedents
-		int[] cheminPlusCourFinal = null; // Tableau d'entier a rendre
-		int compteurInverse = 0; // Permet de parcourir le tableau a rendre
-		for(int m = cheminPlusCour.length - 1; m >= 0; --m) // Parcour inverse du tableau construit
-		{
-			cheminPlusCourFinal[compteurInverse] = cheminPlusCour[m];
-			++compteurInverse;
-		}
-		return cheminPlusCourFinal;
+		return g;
 	}
 	
+	public static Graph tographWithIntensity(int[][] image) {
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Nombre de sommets
+		int nbSommets= imageWidth*imageHeight+2;
+		// Instanciation du Graph
+		Graph g = new Graph(nbSommets);
+
+		// Création des arêtes du premier sommet
+		for(int x=0; x<imageWidth; x++) {
+			g.addEdge(new Edge(0, x+1, 0));
+		}
+		// Calcul du dernier sommet
+		int dernierSommet = imageHeight*imageWidth +1;
+		
+		// Création des arêtes des sommets représentant les pixels
+		for(int y=0; y<imageHeight; y++) {
+			for(int x=0; x<imageWidth; x++) {
+				// Intensité du pixel actuel
+				int intensity = 0;
+				
+				int from = (y*imageWidth)+x+1;
+				int to = ((y+1)*imageWidth)+x+1;
+
+				// Si on n'est pas sur la dernière ligne
+				if(y != imageHeight-1) {
+					// Si le pixel a un voisin de gauche
+					if(x!= 0) {
+						g.addEdge(new Edge(from, to-1, Math.abs(image[y][x-1] - image[y+1][x])));
+					}
+					// Si le pixel a un voisin de droite
+					if(x!=imageWidth-1) {
+						g.addEdge(new Edge(from, to+1, Math.abs(image[y][x+1]-image[y+1][x])));
+					}
+				}else {
+					// Sinon si on est bien à la dernière ligne
+					// on change la destination
+					// pour quelle corresponde au dernier sommet
+					to= dernierSommet;
+				}
+				
+				/* Calcul de l'intensité */
+				if(x== 0) {
+					intensity = image[y][x+1];
+				}else if(x==imageWidth-1){
+					intensity = image[y][x-1];
+				}else{
+					intensity = image[y][x+1] - image[y][x-1];
+				}
+
+				// Dans tous les cas on relie le pixel à celui d'en dessous
+				g.addEdge(new Edge(from, to, Math.abs(intensity)));
+			}
+		}
+		return g;
+	}
+	public static Graph tographLineWithIntensity(int[][] image) {
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Nombre de sommets
+		int nbSommets= imageWidth*imageHeight+2;
+		// Instanciation du Graph
+		Graph g = new Graph(nbSommets);
+
+		// Création des arêtes du premier sommet
+		for(int y=0; y<imageHeight; y++) {
+			g.addEdge(new Edge(0, y+1, 0));
+		}
+		// Calcul du dernier sommet
+		int dernierSommet = imageHeight*imageWidth +1;
+		
+		// Création des arêtes des sommets représentant les pixels
+		for(int x=0; x<imageWidth; x++) {
+			for(int y=0; y<imageHeight; y++) {
+				// Intensité du pixel actuel
+				int intensity = 0;
+				
+				int from = (x*imageHeight)+y+1;
+				int to = ((x+1)*imageHeight)+y+1;
+
+				// Si on n'est pas sur la dernière ligne
+				if(x != imageWidth-1) {
+					// Si le pixel a un voisin de gauche
+					if(y!= 0) {
+						g.addEdge(new Edge(from, to-1, Math.abs(image[y-1][x] - image[y][x+1])));
+					}
+					// Si le pixel a un voisin de droite
+					if(y!=imageHeight-1) {
+						g.addEdge(new Edge(from, to+1, Math.abs(image[y+1][x]-image[y][x+1])));
+					}
+				}else {
+					// Sinon si on est bien à la dernière ligne
+					// on change la destination
+					// pour quelle corresponde au dernier sommet
+					to= dernierSommet;
+				}
+				
+				/* Calcul de l'intensité */
+				if(y== 0) {
+					intensity = image[y+1][x];
+				}else if(y==imageHeight-1){
+					intensity = image[y-1][x];
+				}else{
+					intensity = image[y+1][x] - image[y-1][x];
+				}
+
+				// Dans tous les cas on relie le pixel à celui d'en dessous
+				g.addEdge(new Edge(from, to, Math.abs(intensity)));
+			}
+		}
+		return g;
+	}
+
+	public int[][] reduceImage(int[][] image, boolean useIntensity){
+		// Déclaration de la valeur signifiant la suppression du pixel
+		int REMOVE_CELL = -1;
+		// Calcul de l'intérêt des pixels
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Déclaration de notre nouvelle image
+		int[][] imageReduced = new int[imageHeight][imageWidth-1];
+		// Création du graphe
+		Graph g;
+		if(useIntensity) {
+			g= tographWithIntensity(image);
+		}else {
+			g = tograph(image);
+		}
+
+		/* Récupération de la colonne à supprimer */
+		int premierSommet = 0;
+		int dernierSommet = imageWidth*imageHeight+1;
+		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
+
+		// Suppression du premier sommet qui était fictif
+		cheminInteretMoindre.remove(0);
+		// Suppression du dernier sommet qui était fictif
+		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
+
+		/* Suppression des pixels de moindre interet */
+		for(Integer sommet: cheminInteretMoindre) {
+			// Diminution des sommets car le premier sommet fictif
+			// Prenait la cellule 0
+			sommet --;
+			// Calcul du x et y du pixel
+			int x = (sommet%imageWidth);
+			int y = (sommet/imageWidth);
+			image[y][x]=REMOVE_CELL;
+		}
+
+		/* Création de la nouvelle image */
+		for(int y=0; y< imageHeight; y++ ) {
+			for(int x=0, xImageReduced=0; x< imageWidth; x++,xImageReduced++ ) {
+				// Valeur du pixel de l'ancienne image
+				int val = image[y][x];
+
+				// Si le pixel doit être retiré
+				if(val==REMOVE_CELL) {
+					// On n'affecte pas la valeur dans imageReduced
+					// et on repositionne notre curseur
+					xImageReduced--;
+				}else {
+					// On affecte la valeur du pixel dans notre nouvelle image
+					imageReduced[y][xImageReduced] = val;
+				}
+			}
+		}
+		return imageReduced;
+	}
 	
+	public int[][] reduceImageLine(int[][] image, boolean useIntensity){
+		// Déclaration de la valeur signifiant la suppression du pixel
+		int REMOVE_CELL = -1;
+		// Calcul de l'intérêt des pixels
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Déclaration de notre nouvelle image
+		int[][] imageReduced = new int[imageHeight-1][imageWidth];
+		// Création du graphe
+		Graph g;
+		if(useIntensity) {
+			g= tographLineWithIntensity(image);
+		}else {
+			g = tographLine(image);
+		}
+
+		/* Récupération de la colonne à supprimer */
+		int premierSommet = 0;
+		int dernierSommet = imageWidth*imageHeight+1;
+		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
+
+		// Suppression du premier sommet qui était fictif
+		cheminInteretMoindre.remove(0);
+		// Suppression du dernier sommet qui était fictif
+		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
+
+		/* Suppression des pixels de moindre interet */
+		for(Integer sommet: cheminInteretMoindre) {
+			// Diminution des sommets car le premier sommet fictif
+			// Prenait la cellule 0
+			sommet --;
+			// Calcul du x et y du pixel
+			int x = (sommet/imageHeight);
+			int y = (sommet%imageHeight);
+			image[y][x]=REMOVE_CELL;
+		}
+
+		/* Création de la nouvelle image */
+		for(int x=0; x< imageWidth; x++ ) {
+			for(int y=0, yImageReduced=0; y< imageHeight; y++,yImageReduced++ ) {
+				// Valeur du pixel de l'ancienne image
+				int val = image[y][x];
+
+				// Si le pixel doit être retiré
+				if(val==REMOVE_CELL) {
+					// On n'affecte pas la valeur dans imageReduced
+					// et on repositionne notre curseur
+					yImageReduced--;
+				}else {
+					// On affecte la valeur du pixel dans notre nouvelle image
+					imageReduced[yImageReduced][x] = val;
+				}
+			}
+		}
+		return imageReduced;
+	}
+
+	/**
+	 * Constructeur
+	 * @param fileSrc Fichier source qui sera modifié
+	 * @param fileDest Fichier de destination, résultat des modifications du fichier source
+	 * @param nbLineToRemove Nombre de lignes à supprimer
+	 * @param nbColumnToRemove Nombre de colonnes à supprimer
+	 */
+	public SeamCarving(String fileSrc, String fileDest, int nbLineToRemove, int nbColumnToRemove) {
+		// Récupération des pixels de l'image
+		int[][] image = readpgm(fileSrc);
+		boolean useIntensity = true;
+		
+		/* Vérification de la taille du fichier */
+		// S'il n'y a pas assez de pixels en largeur
+		if(image[0].length<=nbColumnToRemove) {
+			System.out.println("Largeur de l'image insuffisante");
+			System.exit(1);
+		}
+		// S'il n'y a pas assez de pixels en hauteur
+		if(image.length<=nbLineToRemove) {
+			System.out.println("Hauteur de l'image insuffisante");
+			System.exit(1);
+		}
+		// Boucle de suppression des colonnes
+		for(int i =0; i<nbColumnToRemove; i++) {
+			image = reduceImage(image, useIntensity);
+		}
+		
+		// Boucle de suppression des lignes
+		for(int i =0; i<nbLineToRemove; i++) {
+			image = reduceImageLine(image, useIntensity);
+		}
+		
+		// Ecriture de la nouvelle image dans un nouveau fichier
+		writepgm(image, fileDest);
+		System.out.println("Terminé");
+	}
+	
+	public static ArrayList<Integer> Dijsktra(Graph g, int s, int t) {
+		int nbVertices = g.vertices();
+
+		// Au départ on insère tous les noeuds dans le tas avec priorité +infini
+		Heap h = new Heap(nbVertices);
+		// Sauf le noeud de départ qui a une priorité de 0
+		h.decreaseKey(s, 0);
+
+		// On déclare notre chemin
+		ArrayList<Integer> chemin = new ArrayList<Integer>();
+
+		// On déclare notre tableau des sommets visités
+		boolean[] visited = new boolean[nbVertices];
+		// On déclare notre tableau contenant les parents de chaque sommet
+		// Ceci nous permettra de retrouver le chemin de cout minimum une fois la fonction terminée
+		int[] parent = new int[nbVertices];
+		// Initialisation de notre tableau visited à 0
+		// Initialisation de notre tableau à -1
+		for(int i =0; i<nbVertices; i++) {
+			visited[i] = false;
+			parent[i] = -1;
+		}
+
+		int sommetPrioriteMin=-1;
+		while(sommetPrioriteMin != t) {
+			// On retire le noeud de priorité minimum.
+			sommetPrioriteMin = h.pop();
+
+			// On déclare que le sommet a été visité
+			visited[sommetPrioriteMin] = true;
+
+			/* On met à jour ses voisins */
+			// Pour chaque successeur
+			for(Edge e: g.next(sommetPrioriteMin)) {
+				// Si le voisin n'a pas déjà été visité
+				if(!visited[e.to]) {
+					// On récupère la priorité actuelle du sommet retiré
+					int prioriteSommet = h.priority(e.from);
+					// On récupère la priorité actuelle du voisin
+					int prioriteVoisin = h.priority(e.to);
+
+					// Calcul de la potentielle nouvelle priorité
+					int nouvellePriorite = prioriteSommet+e.cost;
+
+					// Si la nouvelle priorité est plus faible que l'ancienne
+					if(nouvellePriorite < prioriteVoisin) {
+						// On met à jour la priorité de ce voisin
+						h.decreaseKey(e.to, nouvellePriorite);
+						// On met à jour le père de ce voisin
+						parent[e.to] = e.from;
+					}
+				}
+			}
+		}
+
+		/* 
+		 * Récupération du chemin minimum en prenant le dernier sommet et
+		 * en remontant via leur parent 
+		 * */
+		int p=t;
+		while(p!=parent[s]) {
+			chemin.add(p);
+			p = parent[p];
+		}
+		// On avait le chemin de cout minimum de t à s, il faut donc le retourner
+		Collections.reverse(chemin);
+		
+		return chemin;
+	}
 }
