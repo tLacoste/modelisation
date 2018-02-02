@@ -137,6 +137,9 @@ public class SeamCarving
 		for(int x=0; x<itrWidth; x++) {
 			g.addEdge(new Edge(0, x+1, 0));
 		}
+		// Calcul du dernier sommet
+		int dernierSommet = itrHeight*itrWidth +1;
+		
 		// Création des arêtes des sommets représentant les pixels
 		for(int y=0; y<itrHeight; y++) {
 			for(int x=0; x<itrWidth; x++) {
@@ -150,25 +153,79 @@ public class SeamCarving
 				if(y != itrHeight-1) {
 					// Si le pixel a un voisin de gauche
 					if(x!= 0) {
-						g.addEdge(new Edge(from, to+1, facteurInteret));
+						g.addEdge(new Edge(from, to-1, facteurInteret));
 					} // Si le pixel a un voisin de droite
 					if(x!=itrWidth-1) {
-						g.addEdge(new Edge(from, to-1, facteurInteret));
+						g.addEdge(new Edge(from, to+1, facteurInteret));
 					}
 				}else {
 					// Sinon si on est bien à la dernière ligne
 					// on change la destination
 					// pour quelle corresponde au dernier sommet
-					to= itrWidth*itrHeight+1;
+					to= dernierSommet;
 				}
 
 				// Dans tous les cas on relie le pixel à celui d'en dessous
 				g.addEdge(new Edge(from, to, facteurInteret));
 			}
 		}
-		// Création des arêtes au dernier sommet
-		for(int x=0; x<itrWidth; x++) {
+		return g;
+	}
+	
+	public static Graph tographWithIntensity(int[][] image) {
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Nombre de sommets
+		int nbSommets= imageWidth*imageHeight+2;
+		// Instanciation du Graph
+		Graph g = new Graph(nbSommets);
+
+		// Création des arêtes du premier sommet
+		for(int x=0; x<imageWidth; x++) {
 			g.addEdge(new Edge(0, x+1, 0));
+		}
+		// Calcul du dernier sommet
+		int dernierSommet = imageHeight*imageWidth +1;
+		
+		// Création des arêtes des sommets représentant les pixels
+		for(int y=0; y<imageHeight; y++) {
+			for(int x=0; x<imageWidth; x++) {
+				// Intensité du pixel actuel
+				int intensity = 0;
+				
+				int from = (y*imageWidth)+x+1;
+				int to = ((y+1)*imageWidth)+x+1;
+
+				// Si on n'est pas sur la dernière ligne
+				if(y != imageHeight-1) {
+					// Si le pixel a un voisin de gauche
+					if(x!= 0) {
+						g.addEdge(new Edge(from, to-1, Math.abs(image[y][x-1] - image[y+1][x])));
+					}
+					// Si le pixel a un voisin de droite
+					if(x!=imageWidth-1) {
+						g.addEdge(new Edge(from, to+1, Math.abs(image[y][x+1]-image[y+1][x])));
+					}
+				}else {
+					// Sinon si on est bien à la dernière ligne
+					// on change la destination
+					// pour quelle corresponde au dernier sommet
+					to= dernierSommet;
+				}
+				
+				/* Calcul de l'intensité */
+				if(x== 0) {
+					intensity = image[y][x+1];
+				}else if(x==imageWidth-1){
+					intensity = image[y][x-1];
+				}else{
+					intensity = image[y][x+1] - image[y][x-1];
+				}
+
+				// Dans tous les cas on relie le pixel à celui d'en dessous
+				
+				g.addEdge(new Edge(from, to, Math.abs(intensity)));
+			}
 		}
 		return g;
 	}
@@ -226,6 +283,58 @@ public class SeamCarving
 		return imageReduced;
 	}
 
+	public int[][] reduceImageWithIntensity(int[][] image){
+		// Déclaration de la valeur signifiant la suppression du pixel
+		int REMOVE_CELL = -1;
+		// Calcul de l'intérêt des pixels
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Déclaration de notre nouvelle image
+		int[][] imageReduced = new int[imageHeight][imageWidth-1];
+		// Création du graphe
+		Graph g = tographWithIntensity(image);
+
+		/* Récupération de la colonne à supprimer */
+		int premierSommet = 0;
+		int dernierSommet = imageWidth*imageHeight+1;
+		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
+
+		// Suppression du premier sommet qui était fictif
+		cheminInteretMoindre.remove(0);
+		// Suppression du dernier sommet qui était fictif
+		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
+
+		/* Suppression des pixels de moindre interet */
+		for(Integer sommet: cheminInteretMoindre) {
+			// Diminution des sommets car le premier sommet fictif
+			// Prenait la cellule 0
+			sommet --;
+			// Calcul du x et y du pixel
+			int x = (sommet%imageWidth);
+			int y = (sommet/imageWidth);
+			image[y][x]=REMOVE_CELL;
+		}
+
+		/* Création de la nouvelle image */
+		for(int y=0; y< imageHeight; y++ ) {
+			for(int x=0, xImageReduced=0; x< imageWidth; x++,xImageReduced++ ) {
+				// Valeur du pixel de l'ancienne image
+				int val = image[y][x];
+
+				// Si le pixel doit être retiré
+				if(val==REMOVE_CELL) {
+					// On n'affecte pas la valeur dans imageReduced
+					// et on repositionne notre curseur
+					xImageReduced--;
+				}else {
+					// On affecte la valeur du pixel dans notre nouvelle image
+					imageReduced[y][xImageReduced] = val;
+				}
+			}
+		}
+		return imageReduced;
+	}
+
 	public SeamCarving(String fileSrc, String fileDest) {
 		// Récupération des pixels de l'image
 		int[][] image = readpgm(fileSrc);
@@ -238,7 +347,7 @@ public class SeamCarving
 		writepgm(image, fileDest);
 		System.out.println("Terminé");
 	}
-
+	
 	public static ArrayList<Integer> Dijsktra(Graph g, int s, int t) {
 		int nbVertices = g.vertices();
 
