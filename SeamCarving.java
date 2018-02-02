@@ -125,6 +125,13 @@ public class SeamCarving
 		return tabFacteurInteret;
 	}
 	
+	/**
+	 * Renvoit le tableau des facteurs d'interets de l'image fournit en parametre
+	 * @param image
+	 * 				Tableau représentant l'image
+	 * @return
+	 * 			tbFacfteurInteret
+	 */
 	public static int[][] interestLine(int[][] image){
 		// Hauteur de l'image
 		int imageHeight = image.length;
@@ -154,6 +161,12 @@ public class SeamCarving
 		return tabFacteurInteret;
 	}
 
+	/**
+	 * Transforme une image sous forme de tableau en un graph
+	 * @param image
+	 * @return g
+	 * 			Graphe
+	 */
 	public static Graph tograph(int[][] image) {
 		int[][] itr = interest(image);
 		// Hauteur de l'image
@@ -254,6 +267,13 @@ public class SeamCarving
 		return g;
 	}
 	
+	/**
+	 * Passage d'une image au graphe avec intensité
+	 * @param image
+	 * 				Tableau
+	 * @return g
+	 * 				Graphe
+	 */
 	public static Graph tographWithIntensity(int[][] image) {
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
@@ -367,6 +387,15 @@ public class SeamCarving
 		return g;
 	}
 
+	/**
+	 * Réduit la taille d'une image 
+	 * @param image
+	 * 				Image
+	 * @param useIntensity
+	 * 				Intensite
+	 * @return imageReduced
+	 * 				Image réduite
+	 */
 	public int[][] reduceImage(int[][] image, boolean useIntensity){
 		// DÃ©claration de la valeur signifiant la suppression du pixel
 		int REMOVE_CELL = -1;
