@@ -34,12 +34,6 @@ public class Graph
 	 {
 		return adj[v];
 	 }     
-   
-   public ArrayList<Edge> adjBis(int v)
-	 {
-		return adj[v];
-	 }      
-
 
    public Iterable<Edge> next(int v)
 	 {
@@ -77,10 +71,5 @@ public class Graph
 		  {
 		  }						
 	 }
-   
-   public ArrayList<Edge>[] getAdj()
-   {
-	   return adj;
-   }
    
 }
