@@ -128,7 +128,7 @@ public class SeamCarving
 	/**
 	 * Renvoit le tableau des facteurs d'interets de l'image fournit en parametre
 	 * @param image
-	 * 				Tableau repr�sentant l'image
+	 * 				Tableau repr�sentant l'image
 	 * @return
 	 * 			tbFacfteurInteret
 	 */
@@ -161,6 +161,107 @@ public class SeamCarving
 		return tabFacteurInteret;
 	}
 
+	public int[][] twopath(Graph g, int s, int t) {
+		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, s, t);
+
+		// Suppression du premier sommet qui était fictif
+		cheminInteretMoindre.remove(0);
+		// Suppression du dernier sommet qui était fictif
+		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
+		
+		int[] d = BellmanFord(g, s, t);
+		// Modification du cout des arêtes
+		for(Edge e: g.edges()) {
+			e.cost -= d[e.to] -d[e.from];
+			if(e.cost < 0)
+				e.cost = 0;
+		}
+		
+		// Inversion des arêtes du plus court chemin
+		return null;
+	}
+	public static int[] BellmanFord(Graph g, int s, int t) {
+		int nbVertices = g.vertices();
+		
+		int[] d = new int[nbVertices];
+		int[] parent = new int[nbVertices];
+		for(int i =0; i<nbVertices; i++) {
+			d[i] = Integer.MAX_VALUE;
+			parent[i] = -1;
+		}
+		
+		d[0] = 0;
+
+		for(int u = 0; u<nbVertices; u++) {
+			for(Edge e: g.next(u)) {
+				if(d[u] + e.cost < d[e.to]) {
+					d[e.to] = d[u] + e.cost;
+					parent[e.to] = u;
+				}
+			}
+		}
+		return d;
+	}
+	
+	public static Graph tographV2(int[][] image) {
+		int[][] itr = interest(image);
+		// Hauteur de l'image
+		int imageHeight = image.length;
+		// Largeur de l'image
+		int imageWidth = image[0].length;
+		// Nombre de sommets
+		// Toutes les lignes de pixels ont deux sommets sauf la première et la dernière, 
+		// - on fait l'addition du double de toutes les lignes du milieu plus les deux extrémitées
+		// - on multiplie cela par la largeur
+		// - et on ajoute les deux sommets fictifs
+		// int nbSommets= ((imageHeight - 2) * 2 + 2) * imageWidth + 2;
+		int nbSommets = (imageHeight*2)*imageWidth +2;
+		// Instanciation du Graph
+		Graph g = new Graph(nbSommets);
+
+		// Création des arêtes du premier sommet
+		for(int x=0; x<imageWidth; x++) {
+			g.addEdge(new Edge(0, x+1, 0));
+		}
+		// Calcul du dernier sommet
+		int dernierSommet = (imageHeight*2-2)*imageWidth +1;
+		
+		// Création des arêtes des sommets représentant les pixels
+		for(int y=0; y<imageHeight; y++) {
+			for(int x=0; x<imageWidth; x++) {
+				// Facteur d'int�r�t du pixel actuel
+				int facteurInteret = itr[y][x];
+
+				int from = (y*2*imageWidth)+x+1;
+				int to = from+imageWidth;
+
+					g.addEdge(new Edge(from, to, 0));
+					from = to;
+					to = to+imageWidth;
+
+				// Si on n'est pas sur la dernière ligne
+				if(y < imageHeight-1) {
+					// Si le pixel a un voisin de gauche
+					if(x!= 0) {
+						g.addEdge(new Edge(from, to-1, facteurInteret));
+					} // Si le pixel a un voisin de droite
+					if(x<imageWidth-1) {
+						g.addEdge(new Edge(from, to+1, facteurInteret));
+					}
+				}else {
+					// Sinon si on est bien à la dernière ligne
+					// on change la destination
+					// pour quelle corresponde au dernier sommet
+					to= dernierSommet;
+				}
+
+				// Dans tous les cas on relie le pixel à celui d'en dessous
+				g.addEdge(new Edge(from, to, facteurInteret));
+			}
+		}
+		return g;
+	}
+	
 	/**
 	 * Transforme une image sous forme de tableau en un graph
 	 * @param image
@@ -268,7 +369,7 @@ public class SeamCarving
 	}
 	
 	/**
-	 * Passage d'une image au graphe avec intensit�
+	 * Passage d'une image au graphe avec intensit�
 	 * @param image
 	 * 				Tableau
 	 * @return g
@@ -388,13 +489,13 @@ public class SeamCarving
 	}
 
 	/**
-	 * R�duit la taille d'une image 
+	 * R�duit la taille d'une image 
 	 * @param image
 	 * 				Image
 	 * @param useIntensity
 	 * 				Intensite
 	 * @return imageReduced
-	 * 				Image r�duite
+	 * 				Image r�duite
 	 */
 	public int[][] reduceImage(int[][] image, boolean useIntensity){
 		// Déclaration de la valeur signifiant la suppression du pixel
@@ -406,11 +507,11 @@ public class SeamCarving
 		int[][] imageReduced = new int[imageHeight][imageWidth-1];
 		// Création du graphe
 		Graph g;
-		if(useIntensity) {
-			g= tographWithIntensity(image);
-		}else {
-			g = tograph(image);
-		}
+//		if(useIntensity) {
+//			g= tographWithIntensity(image);
+//		}else {
+			g = tographV2(image);
+//		}
 
 		/* Récupération de la colonne à supprimer */
 		int premierSommet = 0;
