@@ -162,39 +162,11 @@ public class SeamCarving
 
 	public LinkedHashSet<Integer> twopath(Graph g, int s, int t) {
 		// Recherche du premier chemin
-		ArrayList<Edge> cheminInteretMoindre = Dijsktra(g, s, t);
+		ArrayList<Integer> cheminInteretMoindre = new ArrayList<Integer>();
 		
-		int[] d = BellmanFord(g, s, t);
-		// Modification du cout des arêtes
-		for(Edge e: g.edges()) {
-			e.cost -= d[e.to] -d[e.from];
-			if(e.cost < 0)
-				e.cost = 0;
-		}
-		
-		// Inversion des arêtes du plus court chemin
-		for(Edge e: cheminInteretMoindre) {
-			int tmp = e.from;
-			e.from = e.to;
-			e.to = tmp;
-		}
-		
-		// Recherche du deuxième chemin
-		ArrayList<Edge> deuxiemeCheminInteretMoindre = Dijsktra(g, s, t);
-		// Déclaration de la liste des sommets à retirer
-		LinkedHashSet<Integer> v = new LinkedHashSet<Integer>();
-		for(Edge e: cheminInteretMoindre) {
-			v.add(Math.min(e.from, e.to));
-		}
-		for(Edge e: deuxiemeCheminInteretMoindre) {
-			v.add(Math.min(e.from, e.to));
-		}
-		
-		return v;
-	}
-	public static int[] BellmanFord(Graph g, int s, int t) {
 		int nbVertices = g.vertices();
 		
+		/* Début bellmanford */
 		int[] d = new int[nbVertices];
 		int[] parent = new int[nbVertices];
 		for(int i =0; i<nbVertices; i++) {
@@ -212,9 +184,41 @@ public class SeamCarving
 				}
 			}
 		}
-		return d;
+		/* Fin bellmanford */
+		// Création du chemin grace au bellmanford
+		int i = t;
+		while(i != -1) {
+			cheminInteretMoindre.add(i);
+			i = parent[i];
+		}
+		
+		// Modification du cout des arêtes
+		for(Edge e: g.edges()) {
+			e.cost -= d[e.to] -d[e.from];
+			if(e.cost < 0)
+				e.cost = 0;
+			// Inversion des arêtes
+			if(cheminInteretMoindre.contains(e.to) && parent[e.to] == e.from) {
+				int tmp = e.from;
+				e.from = e.to;
+				e.to = tmp;
+			}
+		}
+		
+		// Recherche du deuxième chemin
+		ArrayList<Edge> deuxiemeCheminInteretMoindre = Dijsktra(g, s, t);
+		// Déclaration de la liste des sommets à retirer
+		LinkedHashSet<Integer> v = new LinkedHashSet<Integer>();
+		for(Integer e: cheminInteretMoindre) {
+			v.add(e);
+		}
+		for(Edge e: deuxiemeCheminInteretMoindre) {
+			v.add(Math.min(e.from, e.to));
+		}
+		System.out.println(v);
+		return v;
 	}
-	
+
 	public static Graph tographV2(int[][] image) {
 		int[][] itr = interest(image);
 		// Hauteur de l'image
@@ -227,7 +231,7 @@ public class SeamCarving
 		// - on multiplie cela par la largeur
 		// - et on ajoute les deux sommets fictifs
 		// int nbSommets= ((imageHeight - 2) * 2 + 2) * imageWidth + 2;
-		int nbSommets = (imageHeight*2)*imageWidth +2;
+		int nbSommets = ((imageHeight-2)*2 +2)*imageWidth +2;
 		// Instanciation du Graph
 		Graph g = new Graph(nbSommets);
 
@@ -236,7 +240,7 @@ public class SeamCarving
 			g.addEdge(new Edge(0, x+1, 0));
 		}
 		// Calcul du dernier sommet
-		int dernierSommet = (imageHeight*2-2)*imageWidth +1;
+		int dernierSommet = nbSommets-1;
 		
 		// Création des arêtes des sommets représentant les pixels
 		for(int y=0; y<imageHeight; y++) {
@@ -244,21 +248,31 @@ public class SeamCarving
 				// Facteur d'int�r�t du pixel actuel
 				int facteurInteret = itr[y][x];
 
-				int from = (y*2*imageWidth)+x+1;
+				int from = ((y*2-1)*imageWidth)+x+1;
 				int to = from+imageWidth;
 
-					g.addEdge(new Edge(from, to, 0));
-					from = to;
-					to = to+imageWidth;
+				if(y == 0 ) {
+					from = x+1;
+					to = from+imageWidth;
+				}else {
+					if(y < imageHeight -1) {
+						g.addEdge(new Edge(from, to, 0));
+						System.out.println(from+"->"+to+"[label=0]a");
+						from = to;
+						to = to+imageWidth;
+					}
+				}
 
 				// Si on n'est pas sur la dernière ligne
 				if(y < imageHeight-1) {
 					// Si le pixel a un voisin de gauche
 					if(x!= 0) {
 						g.addEdge(new Edge(from, to-1, facteurInteret));
+						System.out.println(from+"->"+(to-1)+"[label="+facteurInteret+"]b");
 					} // Si le pixel a un voisin de droite
 					if(x<imageWidth-1) {
 						g.addEdge(new Edge(from, to+1, facteurInteret));
+						System.out.println(from+"->"+(to+1)+"[label="+facteurInteret+"]c");
 					}
 				}else {
 					// Sinon si on est bien à la dernière ligne
@@ -269,8 +283,10 @@ public class SeamCarving
 
 				// Dans tous les cas on relie le pixel à celui d'en dessous
 				g.addEdge(new Edge(from, to, facteurInteret));
+				System.out.println(from+"->"+to+"[label="+facteurInteret+"]d");
 			}
 		}
+		g.writeFile("g0.txt");
 		return g;
 	}
 	
@@ -512,7 +528,7 @@ public class SeamCarving
 		
 		/* Récupération des extrémités des colonnes à supprimer */
 		int premierSommet = 0;
-		int dernierSommet = (imageHeight*2)*imageWidth*+1;
+		int dernierSommet =((imageHeight-2)*2 +2)*imageWidth +1;
 
 		// Déclaration de notre nouvelle image
 		LinkedHashSet<Integer> twopath = twopath(g, premierSommet, dernierSommet);
@@ -523,22 +539,30 @@ public class SeamCarving
 		twopath.remove(dernierSommet);
 		
 		
+		
 		/* Suppression des pixels de moindre interet */
 		for(Integer sommet: twopath) {
 			// Diminution des sommets car le premier sommet fictif
 			// Prenait la cellule 0
 			sommet --;
+			
 			// Calcul du x et y du pixel
 			int x = (sommet%imageWidth);
 			int y = (sommet/imageWidth);
-			if(y%2==0) {
-				image[y/2][x]=REMOVE_CELL;
+			if(y==0 || y%2 == 1) {
+				sommet -=(int) (Math.floor(Math.abs((sommet/imageWidth-1)/2)))*imageWidth;
+				
+				y = (sommet/imageWidth);
+				// Si c'est un sommet qui n'a pas été dupliqué
+				sommet = (int) (Math.floor(Math.abs(sommet/imageWidth-1/2))*imageWidth);
+				image[y][x]=REMOVE_CELL;
 			}
 			
 		}
 		
 		/* Création de la nouvelle image */
-		int[][] imageReduced = new int[imageHeight][imageWidth-1];
+		int[][] imageReduced = new int[imageHeight][imageWidth-2];
+		
 		for(int y=0; y< imageHeight; y++ ) {
 			for(int x=0, xImageReduced=0; x< imageWidth; x++,xImageReduced++ ) {
 				// Valeur du pixel de l'ancienne image
