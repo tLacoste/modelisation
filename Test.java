@@ -58,7 +58,7 @@ class Test
 	 }
    
    /**
-    * Test de la méthode Dijsktra
+    * Test de la mï¿½thode Dijsktra
     */
    public static void testDijkstra()
    {
