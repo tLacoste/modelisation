@@ -139,7 +139,6 @@ public class Graph
 				System.out.println(from+"->"+to+"[label="+facteurInteret+"]d");
 			}
 		}
-		g.writeFile("g0.txt");
 		return g;
 	}
    

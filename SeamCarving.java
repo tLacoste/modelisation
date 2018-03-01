@@ -361,36 +361,39 @@ public class SeamCarving
 	 * Constructeur
 	 * @param fileSrc Fichier source qui sera modifié
 	 * @param fileDest Fichier de destination, résultat des modifications du fichier source
-	 * @param nbLineToRemove Nombre de lignes à supprimer
-	 * @param nbColumnToRemove Nombre de colonnes à supprimer
+	 * @param nbPixelToModify Nombre de pixel à modifier
+	 * @param useLine Modifier des lignes et non plus des colonnes
+	 * @param useIntensity Utiliser l'intensité pour la création du graphe
 	 */
-	public SeamCarving(String fileSrc, String fileDest, int nbLineToRemove, int nbColumnToRemove) {
+	public SeamCarving(String fileSrc, String fileDest, int nbPixelToModify, boolean useLine, boolean useIntensity) {
 		// Récupération des pixels de l'image
 		int[][] image = readpgm(fileSrc);
-		boolean useIntensity = true;
 		
-		/* Vérification de la taille du fichier */
-		// S'il n'y a pas assez de pixels en largeur
-		if(image[0].length<=nbColumnToRemove) {
-			System.out.println("Largeur de l'image insuffisante");
-			System.exit(1);
-		}
-		// S'il n'y a pas assez de pixels en hauteur
-		if(image.length<=nbLineToRemove) {
-			System.out.println("Hauteur de l'image insuffisante");
-			System.exit(1);
-		}
-		// Boucle de suppression des colonnes
-		for(int i =0, l = (int) Math.floor(nbColumnToRemove/2); i<l; i++) {
-			image = reduceImageSuurballe(image, useIntensity);
-		}
-		for(int i =0; i<nbColumnToRemove%2; i++) {
-			image = reduceImage(image, useIntensity);
-		}
-		
-		// Boucle de suppression des lignes
-		for(int i =0; i<nbLineToRemove; i++) {
-			image = reduceImageLine(image, useIntensity);
+		if(!useLine) {
+			// S'il n'y a pas assez de pixels en largeur
+			if(image[0].length<=nbPixelToModify) {
+				System.out.println("Largeur de l'image insuffisante");
+				System.exit(1);
+			}
+			// Boucle de suppression des colonnes
+			for(int i =0, l = (int) Math.floor(nbPixelToModify/2); i<l; i++) {
+				image = reduceImageSuurballe(image, useIntensity);
+			}
+			for(int i =0; i<nbPixelToModify%2; i++) {
+				image = reduceImage(image, useIntensity);
+			}
+		}else {
+			// S'il n'y a pas assez de pixels en hauteur
+			if(image.length<=nbPixelToModify) {
+				System.out.println("Hauteur de l'image insuffisante");
+				System.exit(1);
+			}
+			
+			
+			// Boucle de suppression des lignes
+			for(int i =0; i<nbPixelToModify; i++) {
+				image = reduceImageLine(image, useIntensity);
+			}
 		}
 		
 		// Ecriture de la nouvelle image dans un nouveau fichier
