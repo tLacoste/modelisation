@@ -72,6 +72,11 @@ public class Graph
 		  }						
 	 }
    
+   /**
+    * Créé le graph à la façon Suurballe
+    * @param image tableau de pixels
+    * @return le graph correspondant
+    */
    public static Graph tographSuurballe(int[][] image) {
 		int[][] itr = interest(image);
 		// Hauteur de l'image
@@ -110,7 +115,7 @@ public class Graph
 				}else {
 					if(y < imageHeight -1) {
 						g.addEdge(new Edge(from, to, 0));
-						System.out.println(from+"->"+to+"[label=0]a");
+						//System.out.println(from+"->"+to+"[label=0]");
 						from = to;
 						to = to+imageWidth;
 					}
@@ -121,11 +126,11 @@ public class Graph
 					// Si le pixel a un voisin de gauche
 					if(x!= 0) {
 						g.addEdge(new Edge(from, to-1, facteurInteret));
-						System.out.println(from+"->"+(to-1)+"[label="+facteurInteret+"]b");
+						//System.out.println(from+"->"+(to-1)+"[label="+facteurInteret+"]");
 					} // Si le pixel a un voisin de droite
 					if(x<imageWidth-1) {
 						g.addEdge(new Edge(from, to+1, facteurInteret));
-						System.out.println(from+"->"+(to+1)+"[label="+facteurInteret+"]c");
+						//System.out.println(from+"->"+(to+1)+"[label="+facteurInteret+"]");
 					}
 				}else {
 					// Sinon si on est bien à la dernière ligne
@@ -136,7 +141,7 @@ public class Graph
 
 				// Dans tous les cas on relie le pixel à celui d'en dessous
 				g.addEdge(new Edge(from, to, facteurInteret));
-				System.out.println(from+"->"+to+"[label="+facteurInteret+"]d");
+				//System.out.println(from+"->"+to+"[label="+facteurInteret+"]");
 			}
 		}
 		return g;
@@ -198,6 +203,11 @@ public class Graph
 		return g;
 	}
 	
+	/**
+    * Créé le graph par lignes
+    * @param image tableau de pixels
+    * @return le graph correspondant
+    */
 	public static Graph tographLine(int[][] image) {
 		int[][] itr = interestLine(image);
 		// Hauteur de l'image
@@ -249,7 +259,7 @@ public class Graph
 	}
 	
 	/**
-	 * Passage d'une image au graphe avec intensit�
+	 * Passage d'une image au graphe avec intensité
 	 * @param image
 	 * 				Tableau
 	 * @return g
@@ -311,6 +321,12 @@ public class Graph
 		}
 		return g;
 	}
+	
+	/**
+    * Créé le graph par lignes et avec l'intensité
+    * @param image tableau de pixels
+    * @return le graph correspondant
+    */
 	public static Graph tographLineWithIntensity(int[][] image) {
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
@@ -405,11 +421,11 @@ public class Graph
 	}
 	
 	/**
-	 * Renvoit le tableau des facteurs d'interets de l'image fournit en parametre
-	 * @param image
-	 * 				Tableau repr�sentant l'image
-	 * @return
-	 * 			tbFacfteurInteret
+	 * Methode interestLine
+	 * Permet d'avoir le facteur d'interet de chacun des pixels du tableau
+	 * en regardant par ligne
+	 * @param image tableau des pixels de l'image
+	 * @return un tableau de valeur de facteur d'int�r�t de chaque pixel
 	 */
 	public static int[][] interestLine(int[][] image){
 		// Hauteur de l'image

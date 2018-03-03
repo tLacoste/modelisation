@@ -33,11 +33,27 @@
       * reduceImageLine :
         * Fonctionne de la même façon que reduceImage mais pour gérer la suppression d'une ligne
         * Par : Thierry Lacoste
+	  * reduceImageSuurballe :
+        * Fonctionne de la même façon que reduceImage mais utilise l'algorithme de Suurballe
+        * Par : Thierry Lacoste
+	  * _reduceImageWidth :
+        * Gère la suppression des colonnes d'une image lorsque le programme connait les cellules à supprimer
+        * Par : Thierry Lacoste
+	  * _reduceImageHeight :
+        * Gère la suppression des lignes d'une image lorsque le programme connait les cellules à supprimer
+        * Par : Thierry Lacoste
+	  * extendImage :
+        * Gère l'agrandissement d'une image
+        * Par : Thierry Lacoste
+	  * _extendImage :
+        * Sous fonction de extendImage
+        * Par : Thierry Lacoste
   * Modifications par rapport au sujet :
       * Le logiciel se lance avec 4 arguments au lieu d'un seul
       * La méthode tograph n'a pas comme argument le tableau d'intérêt de chaque pixel mais le tableau des pixels de l'image
+	  * Début de réalisation de l'agrandissement d'une image
   * Utilisation du logiciel :
       * Lancer le Launcher.java avec 4 arguments:
   ```
-<nom_fichier_a_reduire>.pgm <nom_fichier_destination>.pgm <nombre_ligne_suppr> <nombre_colonnes_suppr>
+<nom_fichier_a_reduire>.pgm <nom_fichier_destination>.pgm <agrandir l'image ? (true/FALSE)> <nombre_de_pixel_a_modifier> <supprimer des lignes (true), des colonnes (FALSE)> <utiliser l'intensite ? (true/FALSE)>
   ```

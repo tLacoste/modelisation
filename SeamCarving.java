@@ -89,12 +89,19 @@ public class SeamCarving
 		}
 	}  
 
+	/**
+	 * Trouve les deux chemins les plus court
+	 * @param g graph 
+	 * @param s premier sommet
+	 * @param t dernier sommet
+	 * @return une liste de sommets à supprimer
+	 */
 	public LinkedHashSet<Integer> twopath(Graph g, int s, int t) {
 		// Recherche du premier chemin
 		ArrayList<Integer> cheminInteretMoindre = new ArrayList<Integer>();
-		
+
 		int nbVertices = g.vertices();
-		
+
 		/* Début bellmanford */
 		int[] d = new int[nbVertices];
 		int[] parent = new int[nbVertices];
@@ -102,7 +109,7 @@ public class SeamCarving
 			d[i] = Integer.MAX_VALUE;
 			parent[i] = -1;
 		}
-		
+
 		d[0] = 0;
 
 		for(int u = 0; u<nbVertices; u++) {
@@ -120,7 +127,7 @@ public class SeamCarving
 			cheminInteretMoindre.add(i);
 			i = parent[i];
 		}
-		
+
 		// Modification du cout des arêtes
 		for(Edge e: g.edges()) {
 			e.cost -= d[e.to] -d[e.from];
@@ -133,7 +140,7 @@ public class SeamCarving
 				e.to = tmp;
 			}
 		}
-		
+
 		// Recherche du deuxième chemin
 		ArrayList<Integer> deuxiemeCheminInteretMoindre = Dijsktra(g, s, t);
 		// Déclaration de la liste des sommets à retirer
@@ -144,12 +151,11 @@ public class SeamCarving
 		for(Integer sommet: deuxiemeCheminInteretMoindre) {
 			v.add(sommet);
 		}
-		System.out.println(v);
 		return v;
 	}
 	// Déclaration de la valeur signifiant la suppression du pixel
 	private final int REMOVE_CELL = -1;
-	
+
 	/**
 	 * Permet à partir d'un tableau contenant les valeurs des pixels
 	 * et -1 si le pixel est à enlever, d'enlever les pixels et de créer un nouveau tableau
@@ -160,10 +166,10 @@ public class SeamCarving
 	private int[][] _reduceImageWidth(int[][] image, int amount){
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
-		
+
 		// Création de la nouvelle image
 		int[][] imageReduced = new int[imageHeight][imageWidth-amount];
-		
+
 		for(int y=0; y< imageHeight; y++ ) {
 			for(int x=0, xImageReduced=0; x< imageWidth; x++,xImageReduced++ ) {
 				// Valeur du pixel de l'ancienne image
@@ -182,7 +188,8 @@ public class SeamCarving
 		}
 		return imageReduced;
 	}
-	
+
+
 	/**
 	 * Permet à partir d'un tableau contenant les valeurs des pixels
 	 * et -1 si le pixel est à enlever, d'enlever les pixels et de créer un nouveau tableau
@@ -193,10 +200,10 @@ public class SeamCarving
 	private int[][] _reduceImageHeight(int[][] image, int amount){
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
-		
+
 		// Création de la nouvelle image
 		int[][] imageReduced = new int[imageHeight-amount][imageWidth];
-		
+
 		for(int x=0; x< imageWidth; x++ ) {
 			for(int y=0, yImageReduced=0; y< imageHeight; y++,yImageReduced++ ) {
 				// Valeur du pixel de l'ancienne image
@@ -215,16 +222,21 @@ public class SeamCarving
 		}
 		return imageReduced;
 	}
-	
+
+	/**
+	 * Réduit l'image
+	 * @param image tableau de pixels à réduire de 2
+	 * @param useIntensity utiliser l'intensité ? TODO: Pas encore mis en place
+	 * @return l'image réduite
+	 */
 	public int[][] reduceImageSuurballe(int[][] image, boolean useIntensity){
 		// Calcul de l'intérêt des pixels
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
-		
-		
+
 		Graph g;
 		g = Graph.tographSuurballe(image);
-		
+
 		/* Récupération des extrémités des colonnes à supprimer */
 		int premierSommet = 0;
 		int dernierSommet =((imageHeight-2)*2 +2)*imageWidth +1;
@@ -236,15 +248,15 @@ public class SeamCarving
 		twopath.remove(premierSommet);
 		// Suppression du dernier sommet qui était fictif
 		twopath.remove(dernierSommet);
-		
-		
-		
+
+
+
 		/* Suppression des pixels de moindre interet */
 		for(Integer sommet: twopath) {
 			// Diminution des sommets car le premier sommet fictif
 			// Prenait la cellule 0
 			sommet --;
-			
+
 			// Calcul du x et y du pixel
 			int x = (sommet%imageWidth);
 			int y = (sommet/imageWidth);
@@ -257,28 +269,58 @@ public class SeamCarving
 
 				image[y][x]=REMOVE_CELL;
 			}
-			
+
 		}
-		
+
 		/* Création de la nouvelle image */
 		int[][] imageReduced = _reduceImageWidth(image, 2);
-		
+
 		return imageReduced;
 	}
-	
-	
-	/**
-	 * R�duit la taille d'une image 
-	 * @param image
-	 * 				Image
-	 * @param useIntensity
-	 * 				Intensite
-	 * @return imageReduced
-	 * 				Image r�duite
-	 */
-	public int[][] reduceImage(int[][] image, boolean useIntensity){
-		// Déclaration de la valeur signifiant la suppression du pixel
-		int REMOVE_CELL = -1;
+
+	public int[][] extendImage(int nbPixelToModify, int[][] image, boolean useIntensity){
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		ArrayList<ArrayList<Integer>> save = new ArrayList<>();
+		for(int y = 0; y < imageHeight; y++) {
+			ArrayList<Integer> a = new ArrayList<>();
+			save.add(a);
+			for(int x = 0; x<imageWidth; x++) {
+				a.add(x);
+			}
+		}
+		int[][] initialImage = new int[imageHeight][imageWidth];
+		
+
+		for(int y = 0; y<initialImage.length;y++) {
+			for(int x = 0; x<initialImage[0].length; x++) {
+				initialImage[y][x]= image[y][x];
+			}
+		}
+		
+		
+		for(int i =0; i<nbPixelToModify; i++) {
+			image = _extendImage(image, save, useIntensity);
+		}
+		image = new int[imageHeight][imageWidth+nbPixelToModify];
+		
+		for(int y = 0; y< imageHeight; y++) {
+			ArrayList<Integer> a = save.get(y);
+			int[] initialLine  = initialImage[y];
+			int[] line = image[y];
+			for(int x = 0, realX = 0; x< imageWidth; x++, realX ++) {
+				int val = initialLine[x];
+				line[realX]=val;
+				if(a.contains(x)) {
+					realX++;
+					line[realX]=val;
+				}
+			}
+		}
+			
+		return image;
+	}
+	public int[][] _extendImage(int[][] image, ArrayList<ArrayList<Integer>> save, boolean useIntensity){
 		// Calcul de l'intérêt des pixels
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
@@ -294,7 +336,70 @@ public class SeamCarving
 		int premierSommet = 0;
 		int dernierSommet = imageWidth*imageHeight+1;
 		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
+		// Suppression du premier sommet qui était fictif
+		cheminInteretMoindre.remove(0);
+		// Suppression du dernier sommet qui était fictif
+		cheminInteretMoindre.remove(cheminInteretMoindre.size()-1);
 
+		/* Suppression des pixels de moindre interet */
+		for(Integer sommet: cheminInteretMoindre) {
+			// Diminution des sommets car le premier sommet fictif
+			// Prenait la cellule 0
+			sommet --;
+			// Calcul du x et y du pixel
+			int x = (sommet%imageWidth);
+			int y = (sommet/imageWidth);
+			image[y][x]=REMOVE_CELL;
+		}
+
+		// Création de la nouvelle image
+		int[][] imageReduced = new int[imageHeight][imageWidth-1];
+
+		for(int y=0; y< imageHeight; y++ ) {
+			for(int x=0, xImageReduced=0; x< imageWidth; x++,xImageReduced++ ) {
+				// Valeur du pixel de l'ancienne image
+				int val = image[y][x];
+
+				// Si le pixel doit être retiré
+				if(val==REMOVE_CELL) {
+					save.get(y).remove(x);
+					// On n'affecte pas la valeur dans imageReduced
+					// et on repositionne notre curseur
+					xImageReduced--;
+				}else {
+					// On affecte la valeur du pixel dans notre nouvelle image
+					imageReduced[y][xImageReduced] = val;
+				}
+			}
+		}
+		
+		return imageReduced;
+	}
+	/**
+	 * R�duit la taille d'une image 
+	 * @param image
+	 * 				Image
+	 * @param useIntensity
+	 * 				Intensite
+	 * @return imageReduced
+	 * 				Image r�duite
+	 */
+	public int[][] reduceImage(int[][] image, boolean useIntensity){
+		// Calcul de l'intérêt des pixels
+		int imageWidth = image[0].length;
+		int imageHeight = image.length;
+		// Création du graphe
+		Graph g;
+		if(useIntensity) {
+			g= Graph.tographWithIntensity(image);
+		}else {
+			g = Graph.tograph(image);
+		}
+
+		/* Récupération de la colonne à supprimer */
+		int premierSommet = 0;
+		int dernierSommet = imageWidth*imageHeight+1;
+		ArrayList<Integer> cheminInteretMoindre = Dijsktra(g, premierSommet, dernierSommet);
 		// Suppression du premier sommet qui était fictif
 		cheminInteretMoindre.remove(0);
 		// Suppression du dernier sommet qui était fictif
@@ -315,10 +420,14 @@ public class SeamCarving
 		int[][] imageReduced = _reduceImageWidth(image, 1);
 		return imageReduced;
 	}
-	
+
+	/**
+	 * Réduit une image par ligne
+	 * @param image
+	 * @param useIntensity
+	 * @return une image réduite
+	 */
 	public int[][] reduceImageLine(int[][] image, boolean useIntensity){
-		// Déclaration de la valeur signifiant la suppression du pixel
-		int REMOVE_CELL = -1;
 		// Calcul de l'intérêt des pixels
 		int imageWidth = image[0].length;
 		int imageHeight = image.length;
@@ -353,7 +462,7 @@ public class SeamCarving
 
 		/* Création de la nouvelle image */
 		int[][] imageReduced = _reduceImageHeight(image, 1);
-		
+
 		return imageReduced;
 	}
 
@@ -361,15 +470,19 @@ public class SeamCarving
 	 * Constructeur
 	 * @param fileSrc Fichier source qui sera modifié
 	 * @param fileDest Fichier de destination, résultat des modifications du fichier source
+	 * @param extendImage Augmenter la taille de l'image ?
 	 * @param nbPixelToModify Nombre de pixel à modifier
 	 * @param useLine Modifier des lignes et non plus des colonnes
 	 * @param useIntensity Utiliser l'intensité pour la création du graphe
 	 */
-	public SeamCarving(String fileSrc, String fileDest, int nbPixelToModify, boolean useLine, boolean useIntensity) {
+	public SeamCarving(String fileSrc, String fileDest, boolean extendImage, int nbPixelToModify, boolean useLine, boolean useIntensity) {
 		// Récupération des pixels de l'image
 		int[][] image = readpgm(fileSrc);
-		
-		if(!useLine) {
+
+		if(extendImage) {
+			image = extendImage(2, image, false);
+		}
+		else if(!useLine) {
 			// S'il n'y a pas assez de pixels en largeur
 			if(image[0].length<=nbPixelToModify) {
 				System.out.println("Largeur de l'image insuffisante");
@@ -388,19 +501,28 @@ public class SeamCarving
 				System.out.println("Hauteur de l'image insuffisante");
 				System.exit(1);
 			}
-			
-			
+
+
 			// Boucle de suppression des lignes
 			for(int i =0; i<nbPixelToModify; i++) {
 				image = reduceImageLine(image, useIntensity);
 			}
 		}
-		
+
 		// Ecriture de la nouvelle image dans un nouveau fichier
 		writepgm(image, fileDest);
 		System.out.println("Terminé");
+
+
 	}
-	
+
+	/**
+	 * Algorithme de Dijsktra
+	 * @param g graphe
+	 * @param s premier sommet
+	 * @param t dernier sommet
+	 * @return le chemin le plus court
+	 */
 	public static ArrayList<Integer> Dijsktra(Graph g, int s, int t) {
 		int nbVertices = g.vertices();
 
@@ -463,5 +585,5 @@ public class SeamCarving
 		}
 		Collections.reverse(chemin);
 		return chemin;
-}
+	}
 }
