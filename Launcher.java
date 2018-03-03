@@ -11,7 +11,7 @@ public class Launcher {
 		String fileSrc = "";
 		String fileDest = "";
 		boolean extendImage = false;
-		int nbPixelToModify = 10;
+		int nbPixelToModify = 50;
 		boolean useLine = false;
 		boolean useIntensity = false;
 		Point topLeft = null;
