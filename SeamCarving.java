@@ -1,8 +1,16 @@
+import java.awt.Point;
 import java.io.*;
 import java.util.*;
 public class SeamCarving
 {
 
+	// Déclaration de la valeur signifiant la suppression du pixel
+	private final int REMOVE_CELL = -1;
+	
+	private Point topLeft;
+	private Point bottomRight;
+	private boolean increaseInterest;
+	
 	/**
 	 * M�thode readpgm
 	 * Permet de lire un fichier .pgm
@@ -153,8 +161,7 @@ public class SeamCarving
 		}
 		return v;
 	}
-	// Déclaration de la valeur signifiant la suppression du pixel
-	private final int REMOVE_CELL = -1;
+	
 
 	/**
 	 * Permet à partir d'un tableau contenant les valeurs des pixels
@@ -329,7 +336,7 @@ public class SeamCarving
 		if(useIntensity) {
 			g= Graph.tographWithIntensity(image);
 		}else {
-			g = Graph.tograph(image);
+			g = Graph.tograph(image, topLeft, bottomRight, increaseInterest);
 		}
 
 		/* Récupération de la colonne à supprimer */
@@ -393,7 +400,7 @@ public class SeamCarving
 		if(useIntensity) {
 			g= Graph.tographWithIntensity(image);
 		}else {
-			g = Graph.tograph(image);
+			g = Graph.tograph(image, topLeft, bottomRight, increaseInterest);
 		}
 
 		/* Récupération de la colonne à supprimer */
@@ -436,7 +443,7 @@ public class SeamCarving
 		if(useIntensity) {
 			g= Graph.tographLineWithIntensity(image);
 		}else {
-			g = Graph.tographLine(image);
+			g = Graph.tographLine(image, topLeft, bottomRight, increaseInterest);
 		}
 
 		/* Récupération de la colonne à supprimer */
@@ -474,8 +481,15 @@ public class SeamCarving
 	 * @param nbPixelToModify Nombre de pixel à modifier
 	 * @param useLine Modifier des lignes et non plus des colonnes
 	 * @param useIntensity Utiliser l'intensité pour la création du graphe
+	 * @param topLeft position haut gauche
+	 * @param bottomRight position bas droite
+	 * @param increaseInteret augmenter l'intérêt ou la diminuer
 	 */
-	public SeamCarving(String fileSrc, String fileDest, boolean extendImage, int nbPixelToModify, boolean useLine, boolean useIntensity) {
+	public SeamCarving(String fileSrc, String fileDest, boolean extendImage, int nbPixelToModify, boolean useLine, boolean useIntensity, Point topLeft, Point bottomRight, boolean increaseInterest) {
+		this.topLeft = topLeft;
+		this.bottomRight = bottomRight;
+		this.increaseInterest = increaseInterest;
+		
 		// Récupération des pixels de l'image
 		int[][] image = readpgm(fileSrc);
 
@@ -511,7 +525,9 @@ public class SeamCarving
 
 		// Ecriture de la nouvelle image dans un nouveau fichier
 		writepgm(image, fileDest);
-		System.out.println("Terminé");
+		System.out.println("Traitement réalisé avec succès !");
+		System.out.println("Image créée :\n- Nom: "+fileDest+"\n- Taille: \n\tLargeur: "+image[0].length+"px"+"\n\tHauteur: "+image.length+"px");
+		
 
 
 	}

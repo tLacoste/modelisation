@@ -48,12 +48,21 @@
 	  * _extendImage :
         * Sous fonction de extendImage
         * Par : Thierry Lacoste
+	  * increaseInterest :
+	    * Permet de diminuer ou d'augmenter la valeur d'intérêt d'un ensemble de cases
+		* Par : Thierry Lacoste
   * Modifications par rapport au sujet :
-      * Le logiciel se lance avec 4 arguments au lieu d'un seul
-      * La méthode tograph n'a pas comme argument le tableau d'intérêt de chaque pixel mais le tableau des pixels de l'image
-	  * Début de réalisation de l'agrandissement d'une image (Fonctionne sur le test.pgm, il reste une erreur)
+	  * possibilité de créer le graph de la première partie par intensité
+	  * possibilité d'augmenter ou diminuer l'intérêt d'un carré de pixel pour les graphes avec intérêt
+	  * possibilité d'augmenter la taille d'une image en colonne. ( Fonctionne pour le test.pgm, à débug)
+	  * possibilité de choisir l'utilisation de l'intensité plutôt que de l'intérêt (hormis pour Suurballe)
+	  * possibilité de diminuer l'image par ligne
   * Utilisation du logiciel :
-      * Lancer le Launcher.java avec 4 arguments:
+      * Lancer le Launcher.java avec 2 arguments minimum:
   ```
-<nom_fichier_a_reduire>.pgm <nom_fichier_destination>.pgm <agrandir l'image ? (true/FALSE)> <nombre_de_pixel_a_modifier> <supprimer des lignes (true), des colonnes (FALSE)> <utiliser l'intensite ? (true/FALSE)>
+<nom_fichier_a_reduire>.pgm <nom_fichier_destination>.pgm 
+  ```
+Options supplémentaires:
+  ```
+<nombre_de_pixel_a_modifier> <supprimer des lignes (true), des colonnes (FALSE)> <agrandir l'image ? (true/FALSE)> <utiliser l'intensite ? (true/FALSE)> <x haut gauche carré à augmenter/diminuer intérêt> <y haut gauche carré à augmenter/diminuer intérêt> <x bas droite carré à augmenter/diminuer intérêt> <y bas droite carré à augmenter/diminuer intérêt> <Augmenter/diminuer intérêt (TRUE/false)>
   ```

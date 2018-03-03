@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.awt.Point;
 import java.io.*;
 
 public class Graph
@@ -149,12 +150,14 @@ public class Graph
    
    /**
 	 * Transforme une image sous forme de tableau en un graph
-	 * @param image
-	 * @return g
-	 * 			Graphe
+	 * @param image tableau de pixels
+	 * @param topLeft point du carré en haut à gauche à garder, supprimer ou inexistant
+	 * @param bottomLeft point du carré en bas à droite à garder, supprimer ou inexistant
+	 * @return le graph correspondant
 	 */
-	public static Graph tograph(int[][] image) {
+	public static Graph tograph(int[][] image, Point topLeft, Point bottomRight, boolean increaseInteret) {
 		int[][] itr = interest(image);
+		itr = increaseInterest(itr, topLeft, bottomRight, increaseInteret);
 		// Hauteur de l'image
 		int imageHeight = image.length;
 		// Largeur de l'image
@@ -206,10 +209,13 @@ public class Graph
 	/**
     * Créé le graph par lignes
     * @param image tableau de pixels
+    * @param topLeft point du carré en haut à gauche à garder, supprimer ou inexistant
+    * @param bottomLeft point du carré en bas à droite à garder, supprimer ou inexistant
     * @return le graph correspondant
     */
-	public static Graph tographLine(int[][] image) {
+	public static Graph tographLine(int[][] image, Point topLeft, Point bottomRight, boolean increaseInteret) {
 		int[][] itr = interestLine(image);
+		itr = increaseInterest(itr, topLeft, bottomRight, increaseInteret);
 		// Hauteur de l'image
 		int imageHeight = image.length;
 		// Largeur de l'image
@@ -384,6 +390,16 @@ public class Graph
 		return g;
 	}
 	
+	public static int[][] increaseInterest(int[][] itr, Point topLeft, Point bottomRight, boolean increaseInteret) {
+		if(topLeft!=null && bottomRight != null) {
+			for(int y = topLeft.y; y<=bottomRight.y; y++) {
+				for(int x = topLeft.x; x<=bottomRight.x; x++) {
+					itr[y][x] = increaseInteret?Integer.MAX_VALUE:0;
+				}
+			}
+		}
+		return itr;
+	}
 	
 	/**
 	 * Methode interest
